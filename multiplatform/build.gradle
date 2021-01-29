@@ -1,0 +1,68 @@
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.multiplatform")
+    id("maven-publish")
+}
+apply plugin: "org.jlleitschuh.gradle.ktlint"
+
+group = "ch.dreipol.dreiattest.multiplatform"
+
+
+kotlin {
+    ios("ios") {
+        binaries {
+            framework()
+        }
+    }
+
+    android("android") {
+        publishAllLibraryVariants()
+    }
+
+    explicitApi()
+
+    sourceSets["commonMain"].dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions_coroutines")
+    }
+
+    sourceSets["androidMain"].dependencies {
+        implementation "com.google.android.gms:play-services-safetynet:$safety_net"
+    }
+
+    sourceSets["iosMain"].dependencies {
+    }
+}
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 15
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'src/androidMain/AndroidManifest.xml'
+        }
+    }
+    buildTypes {
+        //This is for MultiplatformSettings
+        debug {
+            // MPP libraries don't currently get this resolution automatically
+            matchingFallbacks = ['release']
+        }
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+
+// workaround for https://youtrack.jetbrains.com/issue/KT-27170
+configurations {
+    compileClasspath
+}
+
+ktlint {
+    ignoreFailures.set(false)
+}
+
+tasks["build"].dependsOn("ktlintFormat")
