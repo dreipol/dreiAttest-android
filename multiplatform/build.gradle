@@ -2,6 +2,7 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.kotlin.multiplatform")
     id("maven-publish")
+    id 'org.jetbrains.kotlin.plugin.serialization' version "$versions_kotlin"
 }
 apply plugin: "org.jlleitschuh.gradle.ktlint"
 
@@ -23,13 +24,26 @@ kotlin {
 
     sourceSets["commonMain"].dependencies {
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions_coroutines")
+        implementation("io.ktor:ktor-client-core:$versions_ktor")
+        implementation("io.ktor:ktor-client-json:$versions_ktor")
+        implementation("io.ktor:ktor-client-logging:$versions_ktor")
+        implementation("io.ktor:ktor-client-serialization:$versions_ktor")
+        implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions_serialization"
+        implementation("co.touchlab:kermit:$versions_kermit")
+    }
+
+    sourceSets["commonTest"].dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-test-common")
+        implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
     }
 
     sourceSets["androidMain"].dependencies {
-        implementation "com.google.android.gms:play-services-safetynet:$safety_net"
+        implementation "com.google.android.gms:play-services-safetynet:$versions_safety_net"
+        implementation("io.ktor:ktor-client-android:$versions_ktor")
     }
 
     sourceSets["iosMain"].dependencies {
+        implementation("io.ktor:ktor-client-ios:$versions_ktor")
     }
 }
 
