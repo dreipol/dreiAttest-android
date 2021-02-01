@@ -1,8 +1,14 @@
 package ch.dreipol.dreiattest.multiplatform
 
 import io.ktor.http.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 public class AttestService(private val keystore: Keystore) {
+
+    private companion object {
+        private val mutex = Mutex()
+    }
 
     private lateinit var sessionConfiguration: SessionConfiguration
     private lateinit var middlewareAPI: MiddlewareAPI
@@ -14,13 +20,14 @@ public class AttestService(private val keystore: Keystore) {
     }
 
     public suspend fun buildSignature(): String {
-        // TODO thread safe
-        if (keystore.hasKeyPair(sessionConfiguration.uuid).not()) {
-            val snonce = middlewareAPI.getNonce(sessionConfiguration.uuid)
-            val publicKey = keystore.generateNewKeyPair(sessionConfiguration.uuid)
-            val nonce = CryptoUtils.hashSHA256(sessionConfiguration.uuid + publicKey + snonce)
-            val attestation = getDeviceAttestation(nonce, publicKey, sessionConfiguration.apiKey)
-            middlewareAPI.setKey(attestation, sessionConfiguration.uuid)
+        mutex.withLock {
+            if (keystore.hasKeyPair(sessionConfiguration.uuid).not()) {
+                val snonce = middlewareAPI.getNonce(sessionConfiguration.uuid)
+                val publicKey = keystore.generateNewKeyPair(sessionConfiguration.uuid)
+                val nonce = CryptoUtils.hashSHA256(sessionConfiguration.uuid + publicKey + snonce)
+                val attestation = getDeviceAttestation(nonce, publicKey, sessionConfiguration.apiKey)
+                middlewareAPI.setKey(attestation, sessionConfiguration.uuid)
+            }
         }
         // TODO  ?? sing (app_request ?? Body? was wenn kein body?
         return keystore.sign(sessionConfiguration.uuid, "Was genau?", getRequestNonce())
