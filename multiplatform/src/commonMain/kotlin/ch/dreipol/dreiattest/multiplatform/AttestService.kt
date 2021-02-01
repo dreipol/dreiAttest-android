@@ -25,7 +25,7 @@ public class AttestService(private val keystore: Keystore) {
                 val snonce = middlewareAPI.getNonce(sessionConfiguration.uuid)
                 val publicKey = keystore.generateNewKeyPair(sessionConfiguration.uuid)
                 val nonce = CryptoUtils.hashSHA256(sessionConfiguration.uuid + publicKey + snonce)
-                val attestation = getDeviceAttestation(nonce, publicKey, sessionConfiguration.apiKey)
+                val attestation = sessionConfiguration.deviceAttestationService.getAttestation(nonce, publicKey)
                 middlewareAPI.setKey(attestation, sessionConfiguration.uuid)
             }
         }
@@ -40,10 +40,13 @@ public class AttestService(private val keystore: Keystore) {
 
 }
 
-public data class SessionConfiguration(val uuid: String, val level: Level = Level.SIGN_ONLY, val apiKey: String? = null)
+public data class SessionConfiguration(val uuid: String, val level: Level = Level.SIGN_ONLY,
+    val deviceAttestationService: DeviceAttestationService)
 
 public enum class Level {
     SIGN_ONLY,
 }
 
-internal expect fun AttestService.getDeviceAttestation(nonce: String, publicKey: String, apiKey: String?): Attestation
+public expect class DeviceAttestationService {
+    internal suspend fun getAttestation(nonce: String, publicKey: String): Attestation
+}

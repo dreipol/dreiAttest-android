@@ -39,6 +39,7 @@ kotlin {
 
     sourceSets["androidMain"].dependencies {
         implementation "com.google.android.gms:play-services-safetynet:$versions_safety_net"
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$versions_play_services_coroutines"
         implementation("io.ktor:ktor-client-android:$versions_ktor")
     }
 
