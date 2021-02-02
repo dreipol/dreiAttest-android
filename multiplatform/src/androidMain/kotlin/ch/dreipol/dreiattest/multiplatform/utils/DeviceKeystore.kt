@@ -2,7 +2,6 @@ package ch.dreipol.dreiattest.multiplatform.utils
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import android.util.Base64
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
@@ -43,10 +42,14 @@ public actual class DeviceKeystore : Keystore {
         if (entry !is KeyStore.PrivateKeyEntry) {
             throw IllegalArgumentException()
         }
-        return Base64.encodeToString(Signature.getInstance("SHA256").run {
+        return CryptoUtils.encodeToBase64(Signature.getInstance("SHA256").run {
             initSign(entry.privateKey)
             update(content)
             sign()
-        }, Base64.DEFAULT)
+        })
+    }
+
+    override fun getPublicKey(alias: String): ByteArray {
+        return keyStore.getCertificate(alias).publicKey.encoded
     }
 }

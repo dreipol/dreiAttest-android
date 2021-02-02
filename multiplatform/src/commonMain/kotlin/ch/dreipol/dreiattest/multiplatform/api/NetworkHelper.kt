@@ -1,4 +1,4 @@
-package ch.dreipol.dreiattest.multiplatform
+package ch.dreipol.dreiattest.multiplatform.api
 
 import co.touchlab.kermit.CommonLogger
 import co.touchlab.kermit.Kermit
@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
 
 internal object NetworkHelper {
 
-    internal const val HEADER_UUID = "dreiAttest-uid"
+    internal const val HEADER_UID = "dreiAttest-uid"
     internal const val HEADER_SIGNATURE = "dreiAttest-signature"
 
     internal val middlewareClient: HttpClient
@@ -31,8 +31,8 @@ internal object NetworkHelper {
 
 }
 
-internal fun HttpRequestBuilder.setUuid(uuid: String) {
-    headers.append(NetworkHelper.HEADER_UUID, uuid)
+internal fun HttpRequestBuilder.setUid(uid: String) {
+    headers.append(NetworkHelper.HEADER_UID, uid)
 }
 
 internal fun HttpRequestBuilder.setSignature(signature: String) {

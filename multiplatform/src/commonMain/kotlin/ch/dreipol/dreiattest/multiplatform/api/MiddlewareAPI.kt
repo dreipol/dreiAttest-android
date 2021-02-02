@@ -1,29 +1,29 @@
-package ch.dreipol.dreiattest.multiplatform
+package ch.dreipol.dreiattest.multiplatform.api
 
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import kotlinx.serialization.Serializable
 
 internal class MiddlewareAPI(private val middlewareUrl: String) {
-    suspend fun getNonce(uuid: String): ByteArray {
+    suspend fun getNonce(uid: String): ByteArray {
         return NetworkHelper.middlewareClient.get("nonce") {
             host = middlewareUrl
-            setUuid(uuid)
+            setUid(uid)
         }
     }
 
-    suspend fun setKey(attestation: Attestation, uuid: String) {
+    suspend fun setKey(attestation: Attestation, uid: String) {
         return NetworkHelper.middlewareClient.post("key") {
             host = middlewareUrl
-            setUuid(uuid)
+            setUid(uid)
             body = defaultSerializer().write(attestation)
         }
     }
 
-    suspend fun deleteKey(signature: String, uuid: String, publicKey: String) {
+    suspend fun deleteKey(signature: String, uid: String, publicKey: String) {
         return NetworkHelper.middlewareClient.delete("key") {
             host = middlewareUrl
-            setUuid(uuid)
+            setUid(uid)
             setSignature(signature)
             body = publicKey
         }

@@ -16,4 +16,8 @@ public actual class DeviceKeystore : Keystore {
     override fun sign(alias: String, content: ByteArray): String {
         TODO("Not yet implemented")
     }
+
+    override fun getPublicKey(alias: String): ByteArray {
+        TODO("Not yet implemented")
+    }
 }

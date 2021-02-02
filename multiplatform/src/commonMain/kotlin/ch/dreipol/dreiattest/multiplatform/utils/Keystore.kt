@@ -9,6 +9,8 @@ public interface Keystore {
     public fun hasKeyPair(alias: String): Boolean
 
     public fun sign(alias: String, content: ByteArray): String
+
+    public fun getPublicKey(alias: String): ByteArray
 }
 
 public expect class DeviceKeystore : Keystore

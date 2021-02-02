@@ -1,8 +1,8 @@
 package ch.dreipol.dreiattest.multiplatform
 
+import ch.dreipol.dreiattest.multiplatform.api.Attestation
+import ch.dreipol.dreiattest.multiplatform.api.MiddlewareAPI
 import ch.dreipol.dreiattest.multiplatform.utils.*
-import ch.dreipol.dreiattest.multiplatform.utils.SharedPreferences
-import ch.dreipol.dreiattest.multiplatform.utils.hashSHA256
 import io.ktor.http.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
@@ -16,7 +16,8 @@ public class AttestService(private val keystore: Keystore) {
 
     private lateinit var sessionConfiguration: SessionConfiguration
     private lateinit var middlewareAPI: MiddlewareAPI
-    private lateinit var uid: String
+    internal lateinit var uid: String
+        private set
 
     public fun initWith(baseAddress: Url, sessionConfiguration: SessionConfiguration) {
         this.sessionConfiguration = sessionConfiguration
@@ -34,6 +35,22 @@ public class AttestService(private val keystore: Keystore) {
                 middlewareAPI.setKey(attestation, uid)
             }
         }
+        return signRequest()
+    }
+
+    public suspend fun deregister() {
+        mutex.withLock {
+            if (keystore.hasKeyPair(uid).not()) {
+                return
+            }
+            val publicKey = keystore.getPublicKey(uid)
+            val signature = signRequest()
+            keystore.deleteKeyPair(uid)
+            middlewareAPI.deleteKey(signature, uid, CryptoUtils.encodeToBase64(publicKey))
+        }
+    }
+
+    private suspend fun signRequest(): String {
         val requestNonce = getRequestNonce()
         // TODO  ?? sing (app_request ?? Body? was wenn kein body?
         return keystore.sign(uid, "TODO".toByteArray())
@@ -47,7 +64,7 @@ public class AttestService(private val keystore: Keystore) {
     }
 
     private suspend fun getRequestNonce(): String {
-        // TODO level abfragen und bei Level.withNonce nonce beim server abholen
+        // TODO check level and request nonce from middleware if configured
         return "00000000-0000-0000-0000-000000000000"
     }
 

@@ -9,3 +9,8 @@ internal actual fun CryptoUtils.generateUuid(): String {
     // TODO
     throw NotImplementedError()
 }
+
+internal actual fun CryptoUtils.encodeToBase64(input: ByteArray): String {
+    // TODO
+    throw NotImplementedError()
+}
