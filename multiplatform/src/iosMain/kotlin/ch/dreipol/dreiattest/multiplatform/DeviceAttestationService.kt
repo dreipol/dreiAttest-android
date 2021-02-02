@@ -1,7 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform
 
 public actual class DeviceAttestationService() {
-    public actual suspend fun getAttestation(nonce: String, publicKey: String): Attestation {
+    internal actual suspend fun getAttestation(nonce: String, publicKey: ByteArray): Attestation {
         throw NotImplementedError()
     }
 }
