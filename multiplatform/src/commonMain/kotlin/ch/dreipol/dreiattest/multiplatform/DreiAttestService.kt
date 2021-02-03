@@ -4,33 +4,46 @@ import ch.dreipol.dreiattest.multiplatform.api.Attestation
 import ch.dreipol.dreiattest.multiplatform.api.MiddlewareAPI
 import ch.dreipol.dreiattest.multiplatform.api.setSignature
 import ch.dreipol.dreiattest.multiplatform.utils.*
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.util.*
+import com.russhwolf.settings.Settings
+import com.russhwolf.settings.invoke
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-public class AttestService(private val keystore: Keystore) {
+public interface AttestService {
+    public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
+    public suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String
+    public suspend fun deregister()
+    public fun shouldByPass(url: String): Boolean
+}
+
+internal class DreiAttestService(private val keystore: Keystore, settings: Settings = Settings()) : AttestService {
 
     private companion object {
         private val mutex = Mutex()
     }
 
+    private val sharedPreferences = SharedPreferences(settings)
     private lateinit var sessionConfiguration: SessionConfiguration
     private lateinit var middlewareAPI: MiddlewareAPI
+    private lateinit var baseAddress: String
     internal lateinit var uid: String
-        private set
 
-    public fun initWith(baseAddress: Url, sessionConfiguration: SessionConfiguration) {
+    override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
         this.sessionConfiguration = sessionConfiguration
-        this.middlewareAPI = MiddlewareAPI(baseAddress.toString())
-        uid = SharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
+        this.middlewareAPI = MiddlewareAPI(baseAddress)
+        this.baseAddress = baseAddress
+        uid = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
 
-    public suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String {
+    override fun shouldByPass(url: String): Boolean {
+        return url.contains(baseAddress).not()
+    }
+
+    override suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>,
+        body: ByteArray?): String {
         mutex.withLock {
             if (keystore.hasKeyPair(uid).not()) {
                 val snonce = middlewareAPI.getNonce(uid)
@@ -43,7 +56,7 @@ public class AttestService(private val keystore: Keystore) {
         return signRequest(url, requestMethod, headers, body)
     }
 
-    public suspend fun deregister() {
+    override suspend fun deregister() {
         mutex.withLock {
             if (keystore.hasKeyPair(uid).not()) {
                 return
@@ -70,7 +83,7 @@ public class AttestService(private val keystore: Keystore) {
     private fun generateUid(user: String): String {
         val uuid = CryptoUtils.generateUuid()
         val uid = "$user;$uuid"
-        SharedPreferences.setUid(user, uid)
+        sharedPreferences.setUid(user, uid)
         return uid
     }
 
@@ -82,12 +95,14 @@ public class AttestService(private val keystore: Keystore) {
 }
 
 public data class SessionConfiguration(val user: String, val level: Level = Level.SIGN_ONLY,
-    val deviceAttestationService: DeviceAttestationService)
+    val deviceAttestationService: AttestationService)
 
 public enum class Level {
     SIGN_ONLY,
 }
 
-public expect class DeviceAttestationService {
-    internal suspend fun getAttestation(nonce: ByteArray, publicKey: ByteArray): Attestation
+public interface AttestationService {
+    public suspend fun getAttestation(nonce: ByteArray, publicKey: ByteArray): Attestation
 }
+
+public expect class DeviceAttestationService : AttestationService

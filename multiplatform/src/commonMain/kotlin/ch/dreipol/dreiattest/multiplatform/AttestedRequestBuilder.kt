@@ -4,14 +4,15 @@ import ch.dreipol.dreiattest.multiplatform.api.setSignature
 import ch.dreipol.dreiattest.multiplatform.api.setUid
 import ch.dreipol.dreiattest.multiplatform.utils.Keystore
 import io.ktor.client.request.*
-import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.util.*
 
 
 // call in default request of callerLibrary
-public suspend fun HttpRequestBuilder.withAttestation(keystore: Keystore, baseAddress: Url, sessionConfiguration: SessionConfiguration) {
-    val attestService = AttestService(keystore)
+// TODO ev with http send
+// change url
+// TODO bypass
+public suspend fun HttpRequestBuilder.withAttestation(keystore: Keystore, baseAddress: String, sessionConfiguration: SessionConfiguration) {
+    val attestService = DreiAttestService(keystore)
     attestService.initWith(baseAddress, sessionConfiguration)
     setSignature(attestService.buildSignature(url.buildString(), readMethod(), readHeaders(), readBody()))
     setUid(attestService.uid)
@@ -19,7 +20,7 @@ public suspend fun HttpRequestBuilder.withAttestation(keystore: Keystore, baseAd
 }
 
 internal fun HttpRequestBuilder.readBody(): ByteArray? {
-    return when (val body = body as OutgoingContent) {
+    return when (val body = body) {
         is OutgoingContent.ByteArrayContent -> body.bytes()
         is OutgoingContent.NoContent -> null
         else -> throw NotImplementedError()
@@ -27,7 +28,7 @@ internal fun HttpRequestBuilder.readBody(): ByteArray? {
 }
 
 internal fun HttpRequestBuilder.readHeaders(): List<Pair<String, String>> {
-    return build().headers.flattenEntries().sortedBy { it.first }
+    return headers.entries().flatMap { e -> e.value.map { e.key to it } }
 }
 
 internal fun HttpRequestBuilder.readMethod(): String {

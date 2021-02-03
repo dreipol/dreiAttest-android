@@ -37,12 +37,18 @@ kotlin {
     sourceSets["commonTest"].dependencies {
         implementation("org.jetbrains.kotlin:kotlin-test-common")
         implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
+        implementation "io.ktor:ktor-client-mock:$versions_ktor"
+        implementation("com.russhwolf:multiplatform-settings-test:$versions_mpf_settings")
     }
 
     sourceSets["androidMain"].dependencies {
         implementation "com.google.android.gms:play-services-safetynet:$versions_safety_net"
         implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$versions_play_services_coroutines"
         implementation("io.ktor:ktor-client-android:$versions_ktor")
+    }
+
+    sourceSets["androidTest"].dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-test-junit")
     }
 
     sourceSets["iosMain"].dependencies {

@@ -9,14 +9,14 @@ import kotlinx.serialization.Serializable
 internal class MiddlewareAPI(private val middlewareUrl: String) {
     suspend fun getNonce(uid: String): ByteArray {
         return NetworkHelper.middlewareClient.get("nonce") {
-            host = middlewareUrl
+            url.setBase(middlewareUrl)
             setUid(uid)
         }
     }
 
     suspend fun setKey(attestation: Attestation, uid: String) {
         return NetworkHelper.middlewareClient.post("key") {
-            host = middlewareUrl
+            url.setBase(middlewareUrl)
             setUid(uid)
             body = defaultSerializer().write(attestation)
         }
@@ -24,8 +24,8 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
 
     suspend fun deleteKey(uid: String, publicKey: String, setSignature: suspend (HttpRequestBuilder) -> Unit) {
         return NetworkHelper.middlewareClient.delete("key") {
-            host = middlewareUrl
-            body = publicKey
+            url.setBase(middlewareUrl)
+            body = TextContent(publicKey, ContentType.Text.Plain)
             setUid(uid)
             setSignature(this)
         }
@@ -33,4 +33,11 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
 }
 
 @Serializable
-internal data class Attestation(val publicKey: String, val attestation: String)
+public data class Attestation(val publicKey: String?, val attestation: String)
+
+private fun URLBuilder.setBase(base: String): URLBuilder {
+    val path = encodedPath
+    return takeFrom(base).apply {
+        encodedPath += path
+    }
+}
