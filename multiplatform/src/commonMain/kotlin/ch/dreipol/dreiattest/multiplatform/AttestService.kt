@@ -2,11 +2,16 @@ package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.Attestation
 import ch.dreipol.dreiattest.multiplatform.api.MiddlewareAPI
+import ch.dreipol.dreiattest.multiplatform.api.setSignature
 import ch.dreipol.dreiattest.multiplatform.utils.*
 import io.ktor.http.*
+import io.ktor.http.content.*
+import io.ktor.util.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 public class AttestService(private val keystore: Keystore) {
 
@@ -25,17 +30,17 @@ public class AttestService(private val keystore: Keystore) {
         uid = SharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
 
-    public suspend fun buildSignature(): String {
+    public suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String {
         mutex.withLock {
             if (keystore.hasKeyPair(uid).not()) {
                 val snonce = middlewareAPI.getNonce(uid)
                 val publicKey = keystore.generateNewKeyPair(uid)
-                val nonce = CryptoUtils.hashSHA256(uid + publicKey + snonce)
+                val nonce = CryptoUtils.hashSHA256(uid.toByteArray() + publicKey + snonce)
                 val attestation = sessionConfiguration.deviceAttestationService.getAttestation(nonce, publicKey)
                 middlewareAPI.setKey(attestation, uid)
             }
         }
-        return signRequest()
+        return signRequest(url, requestMethod, headers, body)
     }
 
     public suspend fun deregister() {
@@ -44,16 +49,22 @@ public class AttestService(private val keystore: Keystore) {
                 return
             }
             val publicKey = keystore.getPublicKey(uid)
-            val signature = signRequest()
-            keystore.deleteKeyPair(uid)
-            middlewareAPI.deleteKey(signature, uid, CryptoUtils.encodeToBase64(publicKey))
+            try {
+                middlewareAPI.deleteKey(uid, CryptoUtils.encodeToBase64(publicKey)) {
+                    val signature = signRequest(it.url.buildString(), it.readMethod(), it.readHeaders(), it.readBody())
+                    it.setSignature(signature)
+                }
+            } finally {
+                keystore.deleteKeyPair(uid)
+            }
         }
     }
 
-    private suspend fun signRequest(): String {
+    private suspend fun signRequest(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String {
         val requestNonce = getRequestNonce()
-        // TODO  ?? sing (app_request ?? Body? was wenn kein body?
-        return keystore.sign(uid, "TODO".toByteArray())
+        val headerJson = Json.encodeToString(headers).toByteArray()
+        val requestHash = CryptoUtils.hashSHA256(url.toByteArray() + requestMethod.toByteArray() + headerJson + (body ?: ByteArray(0)))
+        return keystore.sign(uid, requestHash + requestNonce)
     }
 
     private fun generateUid(user: String): String {
@@ -63,9 +74,9 @@ public class AttestService(private val keystore: Keystore) {
         return uid
     }
 
-    private suspend fun getRequestNonce(): String {
+    private suspend fun getRequestNonce(): ByteArray {
         // TODO check level and request nonce from middleware if configured
-        return "00000000-0000-0000-0000-000000000000"
+        return "00000000-0000-0000-0000-000000000000".toByteArray()
     }
 
 }
@@ -78,5 +89,5 @@ public enum class Level {
 }
 
 public expect class DeviceAttestationService {
-    internal suspend fun getAttestation(nonce: String, publicKey: ByteArray): Attestation
+    internal suspend fun getAttestation(nonce: ByteArray, publicKey: ByteArray): Attestation
 }

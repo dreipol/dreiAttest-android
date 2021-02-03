@@ -8,8 +8,8 @@ import com.google.android.gms.safetynet.SafetyNet
 import kotlinx.coroutines.tasks.await
 
 public actual class DeviceAttestationService(private val context: Context, private val apiKey: String) {
-    internal actual suspend fun getAttestation(nonce: String, publicKey: ByteArray): Attestation {
-        val deviceAttestation = SafetyNet.getClient(context).attest(nonce.toByteArray(), apiKey).await().jwsResult
+    internal actual suspend fun getAttestation(nonce: ByteArray, publicKey: ByteArray): Attestation {
+        val deviceAttestation = SafetyNet.getClient(context).attest(nonce, apiKey).await().jwsResult
         return Attestation(CryptoUtils.encodeToBase64(publicKey), deviceAttestation)
     }
 }

@@ -1,6 +1,6 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
-internal actual fun CryptoUtils.hashSHA256(input: String): String {
+internal actual fun CryptoUtils.hashSHA256(input: ByteArray): ByteArray {
     // TODO
     throw NotImplementedError()
 }
