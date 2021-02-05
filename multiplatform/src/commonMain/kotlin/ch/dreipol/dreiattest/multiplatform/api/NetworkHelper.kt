@@ -7,6 +7,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
+import io.ktor.http.content.*
 import kotlinx.serialization.json.Json
 
 
@@ -42,6 +43,31 @@ internal fun HttpRequestBuilder.setUid(uid: String) {
 
 internal fun HttpRequestBuilder.setSignature(signature: String) {
     headers.append(NetworkHelper.HEADER_SIGNATURE, signature)
+}
+
+internal fun HttpRequestBuilder.readBody(): ByteArray? {
+    return when (val body = body) {
+        is OutgoingContent.ByteArrayContent -> body.bytes()
+        is OutgoingContent.NoContent -> null
+        else -> throw NotImplementedError()
+    }
+}
+
+internal fun HttpRequestBuilder.readHeaders(): List<Pair<String, String>> {
+    val headers = headers.entries().flatMap { e -> e.value.map { e.key to it } }.toMutableList()
+    val body = body
+    if (body is OutgoingContent) {
+        headers.addAll(body.headers.entries().flatMap { e -> e.value.map { e.key to it } })
+    }
+    return headers
+}
+
+internal fun HttpRequestBuilder.readMethod(): String {
+    return method.value
+}
+
+internal fun HttpRequestBuilder.readUrl(): String {
+    return url.buildString()
 }
 
 internal class HttpLogger : Logger {

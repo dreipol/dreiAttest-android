@@ -1,8 +1,6 @@
 package ch.dreipol.dreiattest.multiplatform
 
-import ch.dreipol.dreiattest.multiplatform.api.Attestation
-import ch.dreipol.dreiattest.multiplatform.api.MiddlewareAPI
-import ch.dreipol.dreiattest.multiplatform.api.setSignature
+import ch.dreipol.dreiattest.multiplatform.api.*
 import ch.dreipol.dreiattest.multiplatform.utils.*
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.invoke
@@ -13,29 +11,32 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 public interface AttestService {
+    public val uid: String
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
     public suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String
     public suspend fun deregister()
     public fun shouldByPass(url: String): Boolean
 }
 
-internal class DreiAttestService(private val keystore: Keystore, settings: Settings = Settings()) : AttestService {
+public class DreiAttestService(private val keystore: Keystore, settings: Settings = Settings()) : AttestService {
 
     private companion object {
         private val mutex = Mutex()
     }
 
+    public override val uid: String
+        get() = uidBackingField
     private val sharedPreferences = SharedPreferences(settings)
     private lateinit var sessionConfiguration: SessionConfiguration
     private lateinit var middlewareAPI: MiddlewareAPI
     private lateinit var baseAddress: String
-    internal lateinit var uid: String
+    private lateinit var uidBackingField: String
 
     override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
         this.sessionConfiguration = sessionConfiguration
         this.middlewareAPI = MiddlewareAPI(baseAddress)
         this.baseAddress = baseAddress
-        uid = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
+        uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
 
     override fun shouldByPass(url: String): Boolean {
@@ -64,7 +65,7 @@ internal class DreiAttestService(private val keystore: Keystore, settings: Setti
             val publicKey = keystore.getPublicKey(uid)
             try {
                 middlewareAPI.deleteKey(uid, CryptoUtils.encodeToBase64(publicKey)) {
-                    val signature = signRequest(it.url.buildString(), it.readMethod(), it.readHeaders(), it.readBody())
+                    val signature = signRequest(it.readUrl(), it.readMethod(), it.readHeaders(), it.readBody())
                     it.setSignature(signature)
                 }
             } finally {

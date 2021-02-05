@@ -1,4 +1,4 @@
-package ch.dreipol.dreiattest.multiplatform.util
+package ch.dreipol.dreiattest.multiplatform.mock
 
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
 import ch.dreipol.dreiattest.multiplatform.utils.Keystore

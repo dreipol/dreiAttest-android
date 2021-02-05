@@ -1,6 +1,8 @@
 package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.Attestation
+import ch.dreipol.dreiattest.multiplatform.mock.AttestationServiceMock
+import ch.dreipol.dreiattest.multiplatform.mock.KeystoreMock
 import ch.dreipol.dreiattest.multiplatform.util.*
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
 import ch.dreipol.dreiattest.multiplatform.utils.SharedPreferences
@@ -8,7 +10,6 @@ import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
 import com.russhwolf.settings.MockSettings
 import com.russhwolf.settings.Settings
 import io.ktor.http.content.*
-import io.ktor.utils.io.concurrent.*
 import io.ktor.utils.io.core.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json

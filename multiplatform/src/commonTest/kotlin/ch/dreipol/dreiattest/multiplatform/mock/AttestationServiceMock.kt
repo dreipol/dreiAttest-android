@@ -1,4 +1,4 @@
-package ch.dreipol.dreiattest.multiplatform.util
+package ch.dreipol.dreiattest.multiplatform.mock
 
 import ch.dreipol.dreiattest.multiplatform.AttestationService
 import ch.dreipol.dreiattest.multiplatform.api.Attestation
