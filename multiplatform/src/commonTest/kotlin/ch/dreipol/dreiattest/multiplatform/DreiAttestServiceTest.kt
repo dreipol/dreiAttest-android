@@ -3,7 +3,10 @@ package ch.dreipol.dreiattest.multiplatform
 import ch.dreipol.dreiattest.multiplatform.api.Attestation
 import ch.dreipol.dreiattest.multiplatform.mock.AttestationServiceMock
 import ch.dreipol.dreiattest.multiplatform.mock.KeystoreMock
-import ch.dreipol.dreiattest.multiplatform.util.*
+import ch.dreipol.dreiattest.multiplatform.util.RequestHistory
+import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
+import ch.dreipol.dreiattest.multiplatform.util.launchAndWait
+import ch.dreipol.dreiattest.multiplatform.util.mockMiddlewareClient
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
 import ch.dreipol.dreiattest.multiplatform.utils.SharedPreferences
 import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
@@ -109,6 +112,40 @@ class DreiAttestServiceTest {
         val body = deleteKeyRequest.body
         assertTrue(body is OutgoingContent.ByteArrayContent)
         assertEquals(CryptoUtils.encodeToBase64(publicKey), body.bytes().decodeToString())
+    }
+
+    @Test
+    fun testUsernameValidation() {
+        val attestService = DreiAttestService(keyStore, mockSettings)
+
+        var username = getRandomUsername(20)
+        initWithUsername(attestService, username)
+
+        username = getRandomUsername(255)
+        initWithUsername(attestService, username)
+
+        username = ""
+        var error = assertFails {
+            initWithUsername(attestService, username)
+        }
+        assertTrue(error is InvalidUsernameError)
+
+        username = getRandomUsername(100, listOf(';'))
+        error = assertFails {
+            initWithUsername(attestService, username)
+        }
+        assertTrue(error is InvalidUsernameError)
+    }
+
+    private fun initWithUsername(attestService: DreiAttestService, userName: String) {
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration(userName, deviceAttestationService = AttestationServiceMock()))
+    }
+
+    private fun getRandomUsername(length: Int, possibleInvalidChars: List<Char> = emptyList()): String {
+        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9') + '-' + '_' + '.' + '@' + possibleInvalidChars
+        return (1..length)
+            .map { allowedChars.random() }
+            .joinToString("")
     }
 
 }

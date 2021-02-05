@@ -20,8 +20,9 @@ public interface AttestService {
 
 public class DreiAttestService(private val keystore: Keystore, settings: Settings = Settings()) : AttestService {
 
-    private companion object {
+    internal companion object {
         private val mutex = Mutex()
+        internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){1,255}")
     }
 
     public override val uid: String
@@ -33,6 +34,7 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
     private lateinit var uidBackingField: String
 
     override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
+        validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
         this.middlewareAPI = MiddlewareAPI(baseAddress)
         this.baseAddress = baseAddress
@@ -91,6 +93,12 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
     private suspend fun getRequestNonce(): ByteArray {
         // TODO check level and request nonce from middleware if configured
         return "00000000-0000-0000-0000-000000000000".toByteArray()
+    }
+
+    private fun validateUsername(username: String) {
+        if (usernamePattern.matches(username).not()) {
+            throw InvalidUsernameError(username)
+        }
     }
 
 }
