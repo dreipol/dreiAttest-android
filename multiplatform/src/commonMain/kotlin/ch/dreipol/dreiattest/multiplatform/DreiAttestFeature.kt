@@ -31,6 +31,9 @@ public class DreiAttestFeature(private val attestService: AttestService) {
     }
 
     public suspend fun addHeaders(request: HttpRequestBuilder) {
+        if (attestService.shouldByPass(request.readUrl())) {
+            return
+        }
         addSignature(request)
         setUid(request)
     }

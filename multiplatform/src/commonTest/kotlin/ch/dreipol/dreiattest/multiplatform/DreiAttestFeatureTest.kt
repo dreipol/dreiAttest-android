@@ -2,10 +2,8 @@ package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.NetworkHelper
 import ch.dreipol.dreiattest.multiplatform.mock.AttestServiceMock
-import ch.dreipol.dreiattest.multiplatform.util.RequestHistory
-import ch.dreipol.dreiattest.multiplatform.util.TEST_REQUEST_ENDPOINT
-import ch.dreipol.dreiattest.multiplatform.util.launchAndWait
-import ch.dreipol.dreiattest.multiplatform.util.requestClientMock
+import ch.dreipol.dreiattest.multiplatform.mock.AttestationServiceMock
+import ch.dreipol.dreiattest.multiplatform.util.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -25,6 +23,7 @@ class DreiAttestFeatureTest {
         val client = requestClientMock(attestService, requestHistory)
         val headers = mutableListOf("test" to "test", "test2" to "test2")
         val body = "testBody"
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock()))
         launchAndWait {
             client.get<String> {
                 url {
@@ -57,6 +56,7 @@ class DreiAttestFeatureTest {
         val requestHistory = RequestHistory()
         val client = requestClientMock(attestService, requestHistory)
         val headers = mutableListOf("test" to "test")
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock()))
         launchAndWait {
             client.get<String> {
                 url {
@@ -77,6 +77,30 @@ class DreiAttestFeatureTest {
         val clientRequest = requestHistory.requests[0]
         assertNotNull(clientRequest.headers[NetworkHelper.HEADER_SIGNATURE])
         assertEquals(attestService.uid, clientRequest.headers[NetworkHelper.HEADER_UID])
+    }
+
+    @Test
+    fun testBypass() {
+        val attestService = AttestServiceMock()
+        val requestHistory = RequestHistory()
+        val client = requestClientMock(attestService, requestHistory)
+        val headers = mutableListOf("test" to "test")
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock()))
+        launchAndWait {
+            client.get<String> {
+                url {
+                    takeFrom("https://bypass.dreipol.ch")
+                }
+                addHeaders(headers)
+            }
+        }
+
+        addBodyHeaders(headers)
+        assertEquals(0, attestService.requests.size)
+        assertEquals(1, requestHistory.requests.size)
+        val clientRequest = requestHistory.requests[0]
+        assertNull(clientRequest.headers[NetworkHelper.HEADER_SIGNATURE])
+        assertNull(clientRequest.headers[NetworkHelper.HEADER_UID])
     }
 
     private fun addBodyHeaders(headers: MutableList<Pair<String, String>>) {
