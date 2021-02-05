@@ -21,7 +21,6 @@ public interface AttestService {
 public class DreiAttestService(private val keystore: Keystore, settings: Settings = Settings()) : AttestService {
 
     internal companion object {
-        private val mutex = Mutex()
         internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){0,255}")
     }
 
@@ -32,6 +31,7 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
     private lateinit var middlewareAPI: MiddlewareAPI
     private lateinit var baseAddress: String
     private lateinit var uidBackingField: String
+    private val mutex = Mutex()
 
     override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
         validateUsername(sessionConfiguration.user)
