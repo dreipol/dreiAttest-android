@@ -22,7 +22,7 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
 
     internal companion object {
         private val mutex = Mutex()
-        internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){1,255}")
+        internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){0,255}")
     }
 
     public override val uid: String

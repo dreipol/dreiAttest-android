@@ -124,13 +124,16 @@ class DreiAttestServiceTest {
         username = getRandomUsername(255)
         initWithUsername(attestService, username)
 
-        username = ""
+        username = getRandomUsername(256)
         var error = assertFails {
             initWithUsername(attestService, username)
         }
         assertTrue(error is InvalidUsernameError)
 
-        username = getRandomUsername(100, listOf(';'))
+        username = ""
+        initWithUsername(attestService, username)
+
+        username = getRandomUsername(100, ';')
         error = assertFails {
             initWithUsername(attestService, username)
         }
@@ -141,11 +144,13 @@ class DreiAttestServiceTest {
         attestService.initWith(TEST_BASE_URL, SessionConfiguration(userName, deviceAttestationService = AttestationServiceMock()))
     }
 
-    private fun getRandomUsername(length: Int, possibleInvalidChars: List<Char> = emptyList()): String {
-        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9') + '-' + '_' + '.' + '@' + possibleInvalidChars
-        return (1..length)
+    private fun getRandomUsername(length: Int, invalidCharacter: Char? = null): String {
+        val allowedChars = ('A'..'Z') + ('a'..'z') + ('0'..'9') + '-' + '_' + '.' + '@'
+        val randomLength = length - if (invalidCharacter == null) 0 else 1
+        val random = (1..randomLength)
             .map { allowedChars.random() }
             .joinToString("")
+        return if (invalidCharacter == null) random else random + invalidCharacter
     }
 
 }
