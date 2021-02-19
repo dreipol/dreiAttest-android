@@ -1,5 +1,9 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
+import platform.Foundation.NSData
+
+public actual typealias Hash = NSData
+
 internal actual fun CryptoUtils.hashSHA256(input: ByteArray): ByteArray {
     // TODO
     throw NotImplementedError()
