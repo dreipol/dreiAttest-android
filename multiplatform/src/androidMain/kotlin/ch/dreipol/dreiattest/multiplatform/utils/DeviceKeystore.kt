@@ -11,7 +11,7 @@ public actual class DeviceKeystore : Keystore {
     private val keyStore: KeyStore
         get() = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
 
-    override fun generateNewKeyPair(alias: String): ByteArray {
+    override suspend fun generateNewKeyPair(alias: String): ByteArray {
         val kpg: KeyPairGenerator = KeyPairGenerator.getInstance(
             KeyProperties.KEY_ALGORITHM_EC,
             "AndroidKeyStore"
@@ -37,16 +37,18 @@ public actual class DeviceKeystore : Keystore {
         return keyStore.containsAlias(alias)
     }
 
-    override fun sign(alias: String, content: ByteArray): String {
+    override suspend fun sign(alias: String, content: Hash): String {
         val entry = keyStore.getEntry(alias, null)
         if (entry !is KeyStore.PrivateKeyEntry) {
             throw IllegalArgumentException()
         }
-        return CryptoUtils.encodeToBase64(Signature.getInstance("SHA256").run {
-            initSign(entry.privateKey)
-            update(content)
-            sign()
-        })
+        return CryptoUtils.encodeToBase64(
+            Signature.getInstance("SHA256").run {
+                initSign(entry.privateKey)
+                update(content)
+                sign()
+            }
+        )
     }
 
     override fun getPublicKey(alias: String): ByteArray {

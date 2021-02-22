@@ -13,19 +13,15 @@ import io.ktor.http.*
 const val TEST_BASE_URL = "https://test.dreipol.ch"
 const val TEST_NONCE = "testnonce"
 const val TEST_REQUEST_ENDPOINT = "https://test.dreipol.ch/test"
+const val TEST_BYPASS_ENDPOINT = "https://bypass.dreipol.ch/"
+const val TEST_NONCE_ENDPOINT = "https://test.dreipol.ch/nonce"
+const val TEST_KEY_ENDPOINT = "https://test.dreipol.ch/key"
 
-fun mockMiddlewareClient(): RequestHistory {
-    val requestHistory = RequestHistory()
-    middlewareClientCreator = { createMockClient(requestHistory) }
-    return requestHistory
+fun mockMiddlewareClient(assertions: suspend (HttpRequestData) -> Unit) {
+    middlewareClientCreator = { createMockClient(assertions) }
 }
 
-data class RequestHistory(
-    val requests: MutableList<HttpRequestData> = mutableListOf()
-)
-
-
-fun requestClientMock(attestService: AttestService, requestHistory: RequestHistory): HttpClient {
+fun requestClientMock(attestService: AttestService, assertions: suspend (HttpRequestData) -> Unit): HttpClient {
     return HttpClient(MockEngine) {
         install(JsonFeature) {
             serializer = KotlinxSerializer(
@@ -39,11 +35,14 @@ fun requestClientMock(attestService: AttestService, requestHistory: RequestHisto
         }
         engine {
             addHandler { request ->
-                requestHistory.requests.add(request)
+                assertions(request)
                 when (request.url.fullUrl) {
                     TEST_REQUEST_ENDPOINT -> {
                         val responseHeaders = headersOf("Content-Type" to listOf(ContentType.Text.Plain.toString()))
                         respond(TEST_NONCE, headers = responseHeaders)
+                    }
+                    TEST_BYPASS_ENDPOINT -> {
+                        respondOk()
                     }
                     else -> error("Unhandled ${request.url.fullUrl}")
                 }
@@ -52,7 +51,7 @@ fun requestClientMock(attestService: AttestService, requestHistory: RequestHisto
     }
 }
 
-private fun createMockClient(middlewareRequestHistory: RequestHistory): HttpClient {
+private fun createMockClient(assertions: suspend (HttpRequestData) -> Unit): HttpClient {
     return HttpClient(MockEngine) {
         install(JsonFeature) {
             serializer = KotlinxSerializer(
@@ -63,13 +62,13 @@ private fun createMockClient(middlewareRequestHistory: RequestHistory): HttpClie
         }
         engine {
             addHandler { request ->
-                middlewareRequestHistory.requests.add(request)
+                assertions(request)
                 when (request.url.fullUrl) {
-                    "https://test.dreipol.ch/nonce" -> {
+                    TEST_NONCE_ENDPOINT -> {
                         val responseHeaders = headersOf("Content-Type" to listOf(ContentType.Text.Plain.toString()))
                         respond(TEST_NONCE, headers = responseHeaders)
                     }
-                    "https://test.dreipol.ch/key" -> {
+                    TEST_KEY_ENDPOINT -> {
                         respondOk()
                     }
                     else -> error("Unhandled ${request.url.fullUrl}")

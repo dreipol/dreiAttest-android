@@ -2,13 +2,13 @@ package ch.dreipol.dreiattest.multiplatform.utils
 
 public interface Keystore {
 
-    public fun generateNewKeyPair(alias: String): ByteArray
+    public suspend fun generateNewKeyPair(alias: String): ByteArray
 
     public fun deleteKeyPair(alias: String)
 
     public fun hasKeyPair(alias: String): Boolean
 
-    public fun sign(alias: String, content: ByteArray): String
+    public suspend fun sign(alias: String, content: Hash): String
 
     public fun getPublicKey(alias: String): ByteArray
 }

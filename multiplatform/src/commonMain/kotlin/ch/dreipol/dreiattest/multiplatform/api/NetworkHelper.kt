@@ -10,7 +10,6 @@ import io.ktor.client.request.*
 import io.ktor.http.content.*
 import kotlinx.serialization.json.Json
 
-
 internal var middlewareClientCreator = {
     HttpClient {
         install(JsonFeature) {
@@ -34,7 +33,6 @@ internal object NetworkHelper {
 
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()
-
 }
 
 internal fun HttpRequestBuilder.setUid(uid: String) {

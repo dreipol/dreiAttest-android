@@ -45,8 +45,12 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
         return url.contains(baseAddress).not()
     }
 
-    override suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>,
-        body: ByteArray?): String {
+    override suspend fun buildSignature(
+        url: String,
+        requestMethod: String,
+        headers: List<Pair<String, String>>,
+        body: ByteArray?
+    ): String {
         mutex.withLock {
             if (keystore.hasKeyPair(uid).not()) {
                 val snonce = middlewareAPI.getNonce(uid)
@@ -100,18 +104,20 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
             throw InvalidUsernameError(username)
         }
     }
-
 }
 
-public data class SessionConfiguration(val user: String, val level: Level = Level.SIGN_ONLY,
-    val deviceAttestationService: AttestationService)
+public data class SessionConfiguration(
+    val user: String,
+    val level: Level = Level.SIGN_ONLY,
+    val deviceAttestationService: AttestationService
+)
 
 public enum class Level {
     SIGN_ONLY,
 }
 
 public interface AttestationService {
-    public suspend fun getAttestation(nonce: ByteArray, publicKey: ByteArray): Attestation
+    public suspend fun getAttestation(nonce: Hash, publicKey: ByteArray): Attestation
 }
 
 public expect class DeviceAttestationService : AttestationService

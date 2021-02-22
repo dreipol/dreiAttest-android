@@ -3,9 +3,8 @@ package ch.dreipol.dreiattest.multiplatform
 import ch.dreipol.dreiattest.multiplatform.api.Attestation
 import ch.dreipol.dreiattest.multiplatform.mock.AttestationServiceMock
 import ch.dreipol.dreiattest.multiplatform.mock.KeystoreMock
-import ch.dreipol.dreiattest.multiplatform.util.RequestHistory
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
-import ch.dreipol.dreiattest.multiplatform.util.launchAndWait
+import ch.dreipol.dreiattest.multiplatform.util.TEST_KEY_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.mockMiddlewareClient
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
 import ch.dreipol.dreiattest.multiplatform.utils.SharedPreferences
@@ -14,6 +13,7 @@ import com.russhwolf.settings.MockSettings
 import com.russhwolf.settings.Settings
 import io.ktor.http.content.*
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
@@ -22,20 +22,17 @@ class DreiAttestServiceTest {
 
     private val testUser = "testuser"
     private val testUser2 = "testuser2"
-    private lateinit var requestHistory: RequestHistory
-    private lateinit var keyStore: KeystoreMock
     private lateinit var mockSettings: Settings
 
     @BeforeTest
     fun prepare() {
-        requestHistory = mockMiddlewareClient()
-        keyStore = KeystoreMock()
+        KeystoreMock.keys.clear()
         mockSettings = MockSettings.Factory().create()
     }
 
     @Test
     fun testUidGeneration() {
-        val attestService = DreiAttestService(keyStore, mockSettings)
+        val attestService = DreiAttestService(KeystoreMock, mockSettings)
         attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
         attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser2, deviceAttestationService = AttestationServiceMock()))
 
@@ -56,34 +53,39 @@ class DreiAttestServiceTest {
 
     @Test
     fun testKeyGeneration() {
-        val attestService = DreiAttestService(keyStore, mockSettings)
-        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
+        runBlocking {
+            val attestService = DreiAttestService(KeystoreMock, mockSettings)
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
 
-        val headers = listOf("test" to "test")
-        val url = "$TEST_BASE_URL/test"
-        val requestMethod = "POST"
-        launchAndWait {
+            val headers = listOf("test" to "test")
+            val url = "$TEST_BASE_URL/test"
+            val requestMethod = "POST"
+            mockMiddlewareClient {
+                when (url) {
+                    TEST_KEY_ENDPOINT -> {
+                        assertEquals(1, KeystoreMock.keys.size)
+                        val publicKey = KeystoreMock.keys.toList().first().second.toByteArray()
+                        val requestBody = it.body
+                        assertTrue(requestBody is OutgoingContent.ByteArrayContent)
+                        val attestation = Json.decodeFromString<Attestation>(requestBody.bytes().decodeToString())
+                        assertEquals(CryptoUtils.encodeToBase64(publicKey), attestation.publicKey)
+                    }
+                }
+            }
             attestService.buildSignature(url, requestMethod, headers, null)
-        }
+            // assertEquals(2, counterContext.count)
 
-        assertEquals(2, requestHistory.requests.size)
-        assertEquals(1, keyStore.keys.size)
-        val publicKey = keyStore.keys.toList().first().second.toByteArray()
-        val requestBody = requestHistory.requests[1].body
-        assertTrue(requestBody is OutgoingContent.ByteArrayContent)
-        val attestation = Json.decodeFromString<Attestation>(requestBody.bytes().decodeToString())
-        assertEquals(CryptoUtils.encodeToBase64(publicKey), attestation.publicKey)
-
-        launchAndWait {
+            mockMiddlewareClient {
+            }
             attestService.buildSignature(url, requestMethod, headers, null)
+            // assertEquals(2, counterContext.count)
+            assertEquals(1, KeystoreMock.keys.size)
         }
-        assertEquals(2, requestHistory.requests.size)
-        assertEquals(1, keyStore.keys.size)
     }
 
     @Test
     fun testShouldByPass() {
-        val attestService = DreiAttestService(keyStore, mockSettings)
+        val attestService = DreiAttestService(KeystoreMock, mockSettings)
         attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
 
         assertFalse(attestService.shouldByPass("$TEST_BASE_URL/test"))
@@ -92,31 +94,31 @@ class DreiAttestServiceTest {
 
     @Test
     fun testDeregister() {
-        val attestService = DreiAttestService(keyStore, mockSettings)
-        val sharedPreferences = SharedPreferences(mockSettings)
-        val uid = "testuid"
-        sharedPreferences.setUid(testUser, uid)
-        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
-        keyStore.generateNewKeyPair(uid)
+        runBlocking {
+            val attestService = DreiAttestService(KeystoreMock, mockSettings)
+            val sharedPreferences = SharedPreferences(mockSettings)
+            val uid = "testuid"
+            sharedPreferences.setUid(testUser, uid)
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
+            KeystoreMock.generateNewKeyPair(uid)
 
-        assertTrue(keyStore.hasKeyPair(uid))
-        val publicKey = keyStore.getPublicKey(uid)
+            assertTrue(KeystoreMock.hasKeyPair(uid))
+            val publicKey = KeystoreMock.getPublicKey(uid)
 
-        launchAndWait {
+            mockMiddlewareClient {
+                val body = it.body
+                assertTrue(body is OutgoingContent.ByteArrayContent)
+                assertEquals(CryptoUtils.encodeToBase64(publicKey), body.bytes().decodeToString())
+            }
             attestService.deregister()
+            assertFalse(KeystoreMock.hasKeyPair(uid))
+            // assertEquals(1, it.requests.size)
         }
-
-        assertFalse(keyStore.hasKeyPair(uid))
-        assertEquals(1, requestHistory.requests.size)
-        val deleteKeyRequest = requestHistory.requests[0]
-        val body = deleteKeyRequest.body
-        assertTrue(body is OutgoingContent.ByteArrayContent)
-        assertEquals(CryptoUtils.encodeToBase64(publicKey), body.bytes().decodeToString())
     }
 
     @Test
     fun testUsernameValidation() {
-        val attestService = DreiAttestService(keyStore, mockSettings)
+        val attestService = DreiAttestService(KeystoreMock, mockSettings)
 
         var username = getRandomUsername(20)
         initWithUsername(attestService, username)
@@ -152,5 +154,4 @@ class DreiAttestServiceTest {
             .joinToString("")
         return if (invalidCharacter == null) random else random + invalidCharacter
     }
-
 }
