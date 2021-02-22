@@ -8,16 +8,17 @@ import platform.Foundation.*
 
 public actual typealias Hash = NSData
 
+@ExperimentalUnsignedTypes
 public actual operator fun Hash.plus(other: ByteArray): Hash {
     val mutableData = NSMutableData.create(this)
     mutableData.appendData(Conversion.byteArrayToData(other))
     return mutableData
 }
 
-@OptIn(ExperimentalUnsignedTypes::class)
+@ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.hashSHA256(input: ByteArray): Hash {
     val data = Conversion.byteArrayToData(input)
-    val hash = NSMutableData.create(CC_SHA256_DIGEST_LENGTH.toULong())
+    val hash = NSMutableData.create(length = CC_SHA256_DIGEST_LENGTH.toULong())
         ?: throw Exception("Could not create data.")
     hash.mutableBytes?.let {
         @Suppress("UNCHECKED_CAST")

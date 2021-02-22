@@ -9,7 +9,7 @@ import platform.Foundation.create
 import platform.posix.memcpy
 
 internal object Conversion {
-    @OptIn(ExperimentalUnsignedTypes::class)
+    @ExperimentalUnsignedTypes
     fun dataToByteArray(data: NSData): ByteArray {
         return ByteArray(data.length.toInt()).apply {
             usePinned {
@@ -18,10 +18,12 @@ internal object Conversion {
         }
     }
 
+    @ExperimentalUnsignedTypes
     fun byteArrayToData(bytes: ByteArray): NSData = memScoped {
-        NSData.create(allocArrayOf(bytes), bytes.size.toULong())
+        return NSData.create(bytes = allocArrayOf(bytes), length = bytes.size.toULong())
     }
 
+    @ExperimentalUnsignedTypes
     fun base64ToByteArray(base64String: String): ByteArray {
         return dataToByteArray(NSData.create(base64String) ?: throw IllegalArgumentException())
     }
