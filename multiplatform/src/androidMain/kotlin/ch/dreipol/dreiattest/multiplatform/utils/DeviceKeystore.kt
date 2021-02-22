@@ -42,11 +42,13 @@ public actual class DeviceKeystore : Keystore {
         if (entry !is KeyStore.PrivateKeyEntry) {
             throw IllegalArgumentException()
         }
-        return CryptoUtils.encodeToBase64(Signature.getInstance("SHA256").run {
-            initSign(entry.privateKey)
-            update(content)
-            sign()
-        })
+        return CryptoUtils.encodeToBase64(
+            Signature.getInstance("SHA256").run {
+                initSign(entry.privateKey)
+                update(content)
+                sign()
+            }
+        )
     }
 
     override fun getPublicKey(alias: String): ByteArray {

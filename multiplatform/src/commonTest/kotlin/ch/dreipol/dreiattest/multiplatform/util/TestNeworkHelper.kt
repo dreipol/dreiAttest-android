@@ -21,7 +21,6 @@ fun mockMiddlewareClient(assertions: suspend (HttpRequestData) -> Unit) {
     middlewareClientCreator = { createMockClient(assertions) }
 }
 
-
 fun requestClientMock(attestService: AttestService, assertions: suspend (HttpRequestData) -> Unit): HttpClient {
     return HttpClient(MockEngine) {
         install(JsonFeature) {

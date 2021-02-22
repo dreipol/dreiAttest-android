@@ -2,8 +2,6 @@ package ch.dreipol.dreiattest.multiplatform.mock
 
 import ch.dreipol.dreiattest.multiplatform.AttestService
 import ch.dreipol.dreiattest.multiplatform.SessionConfiguration
-import kotlin.native.concurrent.SharedImmutable
-import kotlin.native.concurrent.ThreadLocal
 
 class AttestServiceMock(override val uid: String = "test") : AttestService {
 

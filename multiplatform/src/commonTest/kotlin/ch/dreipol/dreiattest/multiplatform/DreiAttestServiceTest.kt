@@ -154,5 +154,4 @@ class DreiAttestServiceTest {
             .joinToString("")
         return if (invalidCharacter == null) random else random + invalidCharacter
     }
-
 }

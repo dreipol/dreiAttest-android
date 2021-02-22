@@ -40,12 +40,11 @@ public class DreiAttestFeature(private val attestService: AttestService) {
 
     private suspend fun addSignature(request: HttpRequestBuilder) {
         request.setSignature(
-            attestService.buildSignature(request.readUrl(), request.readMethod(), request.readHeaders(), request.readBody()))
-
+            attestService.buildSignature(request.readUrl(), request.readMethod(), request.readHeaders(), request.readBody())
+        )
     }
 
     private fun setUid(request: HttpRequestBuilder) {
         request.setUid(attestService.uid)
     }
-
 }
