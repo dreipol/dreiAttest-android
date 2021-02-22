@@ -5,6 +5,7 @@ import java.security.MessageDigest
 import java.util.*
 
 public actual typealias Hash = ByteArray
+
 public actual operator fun Hash.plus(other: ByteArray): Hash = plus(elements = other)
 
 internal actual fun CryptoUtils.hashSHA256(input: ByteArray): Hash {
@@ -18,4 +19,8 @@ internal actual fun CryptoUtils.generateUuid(): String {
 
 internal actual fun CryptoUtils.encodeToBase64(input: ByteArray): String {
     return Base64.encodeToString(input, Base64.DEFAULT)
+}
+
+internal actual fun CryptoUtils.encodeHashedToBase64(input: Hash): String {
+    return encodeToBase64(input)
 }

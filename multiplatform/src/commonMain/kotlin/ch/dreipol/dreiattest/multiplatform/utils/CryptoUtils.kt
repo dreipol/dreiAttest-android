@@ -10,3 +10,5 @@ internal expect fun CryptoUtils.hashSHA256(input: ByteArray): Hash
 internal expect fun CryptoUtils.generateUuid(): String
 
 internal expect fun CryptoUtils.encodeToBase64(input: ByteArray): String
+
+internal expect fun CryptoUtils.encodeHashedToBase64(input: Hash): String
