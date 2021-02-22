@@ -1,0 +1,28 @@
+name: Shared Test CI
+
+on: pull_request
+
+jobs:
+  test:
+    runs-on: macos-latest
+    env:
+      working-directory: ./multiplatform
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: cache gradle
+      uses: actions/cache@v1
+      with:
+        path: ~/.gradle/caches
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - name: Run Lint
+      run: bash ../gradlew ktlintFormat
+      working-directory: ${{env.working-directory}}
+    - name: Run Unit Tests on JVM
+      run: bash ../gradlew testReleaseUnitTest
+      working-directory: ${{env.working-directory}}
+    - name: Run Unit Tests on x64
+      run: bash ../gradlew iosX64Test
+      working-directory: ${{env.working-directory}}
