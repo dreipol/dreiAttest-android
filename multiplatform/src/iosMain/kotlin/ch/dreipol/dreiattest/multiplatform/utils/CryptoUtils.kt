@@ -29,5 +29,10 @@ internal actual fun CryptoUtils.hashSHA256(input: ByteArray): Hash {
 
 internal actual fun CryptoUtils.generateUuid(): String = NSUUID.UUID().UUIDString
 
+@ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.encodeToBase64(input: ByteArray): String =
     Conversion.byteArrayToData(input).base64EncodedStringWithOptions(0)
+
+@ExperimentalUnsignedTypes
+internal actual fun CryptoUtils.encodeHashedToBase64(input: Hash): String =
+    input.base64EncodedStringWithOptions(0)

@@ -3,10 +3,12 @@ package ch.dreipol.dreiattest.multiplatform.mock
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
 import ch.dreipol.dreiattest.multiplatform.utils.Hash
 import ch.dreipol.dreiattest.multiplatform.utils.Keystore
-import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
+import ch.dreipol.dreiattest.multiplatform.utils.encodeHashedToBase64
 import io.ktor.utils.io.core.*
+import kotlin.native.concurrent.ThreadLocal
 
-class KeystoreMock : Keystore {
+@ThreadLocal
+object KeystoreMock : Keystore {
 
     val keys = mutableMapOf<String, String>()
 
@@ -25,7 +27,7 @@ class KeystoreMock : Keystore {
     }
 
     override suspend fun sign(alias: String, content: Hash): String {
-        return CryptoUtils.encodeToBase64(content)
+        return CryptoUtils.encodeHashedToBase64(content)
     }
 
     override fun getPublicKey(alias: String): ByteArray {
