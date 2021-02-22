@@ -111,7 +111,7 @@ public enum class Level {
 }
 
 public interface AttestationService {
-    public suspend fun getAttestation(nonce: ByteArray, publicKey: ByteArray): Attestation
+    public suspend fun getAttestation(nonce: Hash, publicKey: ByteArray): Attestation
 }
 
 public expect class DeviceAttestationService : AttestationService

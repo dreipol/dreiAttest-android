@@ -1,6 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.mock
 
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
+import ch.dreipol.dreiattest.multiplatform.utils.Hash
 import ch.dreipol.dreiattest.multiplatform.utils.Keystore
 import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
 import io.ktor.utils.io.core.*
@@ -9,7 +10,7 @@ class KeystoreMock : Keystore {
 
     val keys = mutableMapOf<String, String>()
 
-    override fun generateNewKeyPair(alias: String): ByteArray {
+    override suspend fun generateNewKeyPair(alias: String): ByteArray {
         val key = "key"
         keys[alias] = key
         return key.toByteArray()
@@ -23,7 +24,7 @@ class KeystoreMock : Keystore {
         return keys.containsKey(alias)
     }
 
-    override fun sign(alias: String, content: ByteArray): String {
+    override suspend fun sign(alias: String, content: Hash): String {
         return CryptoUtils.encodeToBase64(content)
     }
 

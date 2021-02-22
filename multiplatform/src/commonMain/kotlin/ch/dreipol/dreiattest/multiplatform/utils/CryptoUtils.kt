@@ -3,6 +3,7 @@ package ch.dreipol.dreiattest.multiplatform.utils
 public object CryptoUtils
 
 public expect class Hash
+public expect operator fun Hash.plus(other: ByteArray): Hash
 
 internal expect fun CryptoUtils.hashSHA256(input: ByteArray): Hash
 

@@ -4,7 +4,10 @@ import android.util.Base64
 import java.security.MessageDigest
 import java.util.*
 
-internal actual fun CryptoUtils.hashSHA256(input: ByteArray): ByteArray {
+public actual typealias Hash = ByteArray
+public actual operator fun Hash.plus(other: ByteArray): Hash = plus(elements = other)
+
+internal actual fun CryptoUtils.hashSHA256(input: ByteArray): Hash {
     val digest = MessageDigest.getInstance("SHA-256")
     return digest.digest(input)
 }

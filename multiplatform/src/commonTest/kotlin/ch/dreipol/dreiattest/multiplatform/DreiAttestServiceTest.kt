@@ -14,6 +14,7 @@ import com.russhwolf.settings.MockSettings
 import com.russhwolf.settings.Settings
 import io.ktor.http.content.*
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
@@ -91,7 +92,7 @@ class DreiAttestServiceTest {
     }
 
     @Test
-    fun testDeregister() {
+    fun testDeregister() = runBlocking {
         val attestService = DreiAttestService(keyStore, mockSettings)
         val sharedPreferences = SharedPreferences(mockSettings)
         val uid = "testuid"
