@@ -36,3 +36,4 @@ exclude_patterns:
  - "**/androidTest/"
  - "**/Pods/"
  - "**/Tests/"
+ - "**Test/"
