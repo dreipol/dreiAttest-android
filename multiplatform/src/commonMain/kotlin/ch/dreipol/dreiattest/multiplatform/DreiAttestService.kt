@@ -19,7 +19,7 @@ public interface AttestService {
     public suspend fun getRequestNonce(): ByteArray
 }
 
-public class DreiAttestService(private val keystore: Keystore, settings: Settings = Settings()) : AttestService {
+public class DreiAttestService(private val keystore: Keystore = DeviceKeystore(), settings: Settings = Settings()) : AttestService {
 
     internal companion object {
         internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){0,255}")
