@@ -4,6 +4,7 @@ import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 internal class MiddlewareAPI(private val middlewareUrl: String) {
@@ -33,7 +34,14 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
 }
 
 @Serializable
-public data class Attestation(val publicKey: String?, val attestation: String)
+public data class Attestation(
+    @SerialName("public_key")
+    val publicKey: String? = null,
+    @SerialName("key_id")
+    val keyId: String? = null,
+    val attestation: String,
+    val driver: String,
+)
 
 private fun URLBuilder.setBase(base: String): URLBuilder {
     val path = encodedPath

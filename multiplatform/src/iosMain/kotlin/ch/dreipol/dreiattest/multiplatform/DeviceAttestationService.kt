@@ -10,6 +10,8 @@ import platform.Foundation.base64EncodedStringWithOptions
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
+internal const val platformDriver = "apple"
+
 public actual class DeviceAttestationService() : AttestationService {
     private val service = DCAppAttestService.sharedService
 
@@ -27,6 +29,6 @@ public actual class DeviceAttestationService() : AttestationService {
         }
 
         val attestation = result.first ?: throw IllegalStateException()
-        return Attestation(keyId, attestation.base64EncodedStringWithOptions(0))
+        return Attestation(keyId = keyId, attestation = attestation.base64EncodedStringWithOptions(0), driver = platformDriver)
     }
 }
