@@ -21,3 +21,4 @@ jobs:
         version=${GITHUB_REF/refs\/tags\//}
         echo "Version: $version"
         ../gradlew -Pversion=${version} publish
+      working-directory: ${{env.working-directory}}
