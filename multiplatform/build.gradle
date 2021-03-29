@@ -98,3 +98,22 @@ ktlint {
 }
 
 tasks["build"].dependsOn("ktlintFormat")
+
+Properties properties = new Properties()
+File localPropertiesFile = new File(rootProject.projectDir.absolutePath + '/local.properties')
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.newDataInputStream())
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/dreipol/dreiAttest-android")
+            credentials {
+                username = properties.getProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME") ?: ""
+                password = properties.getProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN") ?: ""
+            }
+        }
+    }
+}

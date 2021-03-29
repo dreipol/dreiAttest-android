@@ -1,0 +1,23 @@
+name: Publish Action
+
+on: 
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish:
+    runs-on: macos-latest
+    env:
+      working-directory: ./multiplatform
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Publish artifacts
+      env:
+        GITHUB_USERNAME: ${{ secrets.GITHUB_USERNAME }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        version=${GITHUB_REF/refs\/tags\//}
+        echo "Version: $version"
+        ../gradlew -Pversion=${version} publish

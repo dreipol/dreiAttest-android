@@ -25,6 +25,6 @@ internal object Conversion {
 
     @ExperimentalUnsignedTypes
     fun base64ToByteArray(base64String: String): ByteArray {
-        return dataToByteArray(NSData.create(base64String) ?: throw IllegalArgumentException())
+        return dataToByteArray(NSData.create(base64Encoding = base64String) ?: throw IllegalArgumentException())
     }
 }
