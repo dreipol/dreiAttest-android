@@ -1,6 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.*
+import ch.dreipol.dreiattest.multiplatform.utils.Request
 import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
@@ -34,17 +35,24 @@ public class DreiAttestFeature(private val attestService: AttestService) {
         if (attestService.shouldByPass(request.readUrl())) {
             return
         }
-        addSignature(request)
+        val snonce = attestService.getRequestNonce()
+        addSignature(request, snonce)
         setUid(request)
+        setNonce(request, snonce)
     }
 
-    private suspend fun addSignature(request: HttpRequestBuilder) {
+    private suspend fun addSignature(request: HttpRequestBuilder, snonce: ByteArray) {
         request.setSignature(
-            attestService.buildSignature(request.readUrl(), request.readMethod(), request.readHeaders(), request.readBody())
+            attestService.buildSignature(Request(request.readUrl(), request.readMethod(), request.readHeaders(), request.readBody()),
+                snonce)
         )
     }
 
     private fun setUid(request: HttpRequestBuilder) {
         request.setUid(attestService.uid)
+    }
+
+    private fun setNonce(request: HttpRequestBuilder, snonce: ByteArray) {
+        request.setNonce(snonce)
     }
 }

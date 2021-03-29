@@ -1,5 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.api
 
+import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
+import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
 import co.touchlab.kermit.CommonLogger
 import co.touchlab.kermit.Kermit
 import io.ktor.client.*
@@ -30,6 +32,7 @@ internal object NetworkHelper {
 
     internal const val HEADER_UID = "Dreiattest-uid"
     internal const val HEADER_SIGNATURE = "Dreiattest-signature"
+    internal const val HEADER_NONCE = "Dreiattest-nonce"
 
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()
@@ -41,6 +44,10 @@ internal fun HttpRequestBuilder.setUid(uid: String) {
 
 internal fun HttpRequestBuilder.setSignature(signature: String) {
     headers.append(NetworkHelper.HEADER_SIGNATURE, signature)
+}
+
+internal fun HttpRequestBuilder.setNonce(nonce: ByteArray) {
+    headers.append(NetworkHelper.HEADER_NONCE, CryptoUtils.encodeToBase64(nonce))
 }
 
 internal fun HttpRequestBuilder.readBody(): ByteArray? {

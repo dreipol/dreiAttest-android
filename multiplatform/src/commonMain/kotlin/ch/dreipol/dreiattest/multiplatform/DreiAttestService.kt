@@ -13,9 +13,10 @@ import kotlinx.serialization.json.Json
 public interface AttestService {
     public val uid: String
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
-    public suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String
+    public suspend fun buildSignature(request: Request, snonce: ByteArray): String
     public suspend fun deregister()
     public fun shouldByPass(url: String): Boolean
+    public suspend fun getRequestNonce(): ByteArray
 }
 
 public class DreiAttestService(private val keystore: Keystore, settings: Settings = Settings()) : AttestService {
@@ -46,21 +47,19 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
     }
 
     override suspend fun buildSignature(
-        url: String,
-        requestMethod: String,
-        headers: List<Pair<String, String>>,
-        body: ByteArray?
+        request: Request,
+        snonce: ByteArray,
     ): String {
         mutex.withLock {
             if (keystore.hasKeyPair(uid).not()) {
-                val snonce = middlewareAPI.getNonce(uid)
+                val signatureNonce = middlewareAPI.getNonce(uid)
                 val publicKey = keystore.generateNewKeyPair(uid)
-                val nonce = CryptoUtils.hashSHA256(uid.toByteArray() + publicKey + snonce)
+                val nonce = CryptoUtils.hashSHA256(uid.toByteArray() + publicKey + signatureNonce)
                 val attestation = sessionConfiguration.deviceAttestationService.getAttestation(nonce, publicKey)
-                middlewareAPI.setKey(attestation, uid)
+                middlewareAPI.setKey(attestation, uid, signatureNonce)
             }
         }
-        return signRequest(url, requestMethod, headers, body)
+        return signRequest(request, snonce)
     }
 
     override suspend fun deregister() {
@@ -69,9 +68,10 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
                 return
             }
             val publicKey = keystore.getPublicKey(uid)
+            val snonce = getRequestNonce()
             try {
-                middlewareAPI.deleteKey(uid, CryptoUtils.encodeToBase64(publicKey)) {
-                    val signature = signRequest(it.readUrl(), it.readMethod(), it.readHeaders(), it.readBody())
+                middlewareAPI.deleteKey(uid, CryptoUtils.encodeToBase64(publicKey), snonce) {
+                    val signature = signRequest(Request(it.readUrl(), it.readMethod(), it.readHeaders(), it.readBody()), snonce)
                     it.setSignature(signature)
                 }
             } finally {
@@ -80,11 +80,16 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
         }
     }
 
-    private suspend fun signRequest(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String {
-        val requestNonce = getRequestNonce()
-        val headerJson = Json.encodeToString(headers).toByteArray()
-        val requestHash = CryptoUtils.hashSHA256(url.toByteArray() + requestMethod.toByteArray() + headerJson + (body ?: ByteArray(0)))
-        return keystore.sign(uid, requestHash + requestNonce)
+    override suspend fun getRequestNonce(): ByteArray {
+        // TODO check level and request nonce from middleware if configured
+        return "00000000-0000-0000-0000-000000000000".toByteArray()
+    }
+
+    private suspend fun signRequest(request: Request, snonce: ByteArray): String {
+        val headerJson = Json.encodeToString(request.headers).toByteArray()
+        val requestHash = CryptoUtils.hashSHA256(
+            request.url.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0)))
+        return keystore.sign(uid, requestHash + snonce)
     }
 
     private fun generateUid(user: String): String {
@@ -92,11 +97,6 @@ public class DreiAttestService(private val keystore: Keystore, settings: Setting
         val uid = "$user;$uuid"
         sharedPreferences.setUid(user, uid)
         return uid
-    }
-
-    private suspend fun getRequestNonce(): ByteArray {
-        // TODO check level and request nonce from middleware if configured
-        return "00000000-0000-0000-0000-000000000000".toByteArray()
     }
 
     private fun validateUsername(username: String) {

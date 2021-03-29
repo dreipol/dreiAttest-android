@@ -7,6 +7,7 @@ import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
 import ch.dreipol.dreiattest.multiplatform.util.TEST_KEY_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.mockMiddlewareClient
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
+import ch.dreipol.dreiattest.multiplatform.utils.Request
 import ch.dreipol.dreiattest.multiplatform.utils.SharedPreferences
 import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
 import com.russhwolf.settings.MockSettings
@@ -72,12 +73,12 @@ class DreiAttestServiceTest {
                     }
                 }
             }
-            attestService.buildSignature(url, requestMethod, headers, null)
+            attestService.buildSignature(Request(url, requestMethod, headers, null), attestService.getRequestNonce())
             // assertEquals(2, counterContext.count)
 
             mockMiddlewareClient {
             }
-            attestService.buildSignature(url, requestMethod, headers, null)
+            attestService.buildSignature(Request(url, requestMethod, headers, null), attestService.getRequestNonce())
             // assertEquals(2, counterContext.count)
             assertEquals(1, KeystoreMock.keys.size)
         }

@@ -2,6 +2,8 @@ package ch.dreipol.dreiattest.multiplatform.mock
 
 import ch.dreipol.dreiattest.multiplatform.AttestService
 import ch.dreipol.dreiattest.multiplatform.SessionConfiguration
+import ch.dreipol.dreiattest.multiplatform.utils.Request
+import io.ktor.utils.io.core.*
 
 class AttestServiceMock(override val uid: String = "test") : AttestService {
 
@@ -13,7 +15,7 @@ class AttestServiceMock(override val uid: String = "test") : AttestService {
         this.sessionConfiguration = sessionConfiguration
     }
 
-    override suspend fun buildSignature(url: String, requestMethod: String, headers: List<Pair<String, String>>, body: ByteArray?): String {
+    override suspend fun buildSignature(request: Request, snonce: ByteArray): String {
         return "signature"
     }
 
@@ -23,5 +25,9 @@ class AttestServiceMock(override val uid: String = "test") : AttestService {
 
     override fun shouldByPass(url: String): Boolean {
         return url.contains(baseAddress).not()
+    }
+
+    override suspend fun getRequestNonce(): ByteArray {
+        return "00000000-0000-0000-0000-000000000000".toByteArray()
     }
 }

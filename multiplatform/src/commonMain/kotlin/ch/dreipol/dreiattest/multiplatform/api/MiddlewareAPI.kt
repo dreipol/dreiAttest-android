@@ -15,19 +15,21 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
         }
     }
 
-    suspend fun setKey(attestation: Attestation, uid: String) {
+    suspend fun setKey(attestation: Attestation, uid: String, nonce: ByteArray) {
         return NetworkHelper.middlewareClient.post("key") {
             url.setBase(middlewareUrl)
             setUid(uid)
+            setNonce(nonce)
             body = defaultSerializer().write(attestation)
         }
     }
 
-    suspend fun deleteKey(uid: String, publicKey: String, setSignature: suspend (HttpRequestBuilder) -> Unit) {
+    suspend fun deleteKey(uid: String, publicKey: String, nonce: ByteArray, setSignature: suspend (HttpRequestBuilder) -> Unit) {
         return NetworkHelper.middlewareClient.delete("key") {
             url.setBase(middlewareUrl)
             body = TextContent(publicKey, ContentType.Text.Plain)
             setUid(uid)
+            setNonce(nonce)
             setSignature(this)
         }
     }

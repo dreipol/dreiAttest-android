@@ -7,12 +7,15 @@ import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BYPASS_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.TEST_REQUEST_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.requestClientMock
+import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
+import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
 import io.ktor.client.engine.mock.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.util.*
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -105,6 +108,7 @@ class DreiAttestFeatureTest {
     private fun addDreiattestHeaders(headers: MutableList<Pair<String, String>>) {
         headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")
         headers.add(NetworkHelper.HEADER_UID to "test")
+        headers.add(NetworkHelper.HEADER_NONCE to CryptoUtils.encodeToBase64("00000000-0000-0000-0000-000000000000".toByteArray()))
     }
 
     private fun HttpRequestBuilder.addHeaders(headers: List<Pair<String, String>>) {
