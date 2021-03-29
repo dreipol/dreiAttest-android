@@ -28,8 +28,8 @@ internal var middlewareClientCreator = {
 
 internal object NetworkHelper {
 
-    internal const val HEADER_UID = "dreiAttest-uid"
-    internal const val HEADER_SIGNATURE = "dreiAttest-signature"
+    internal const val HEADER_UID = "Dreiattest-uid"
+    internal const val HEADER_SIGNATURE = "Dreiattest-signature"
 
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()

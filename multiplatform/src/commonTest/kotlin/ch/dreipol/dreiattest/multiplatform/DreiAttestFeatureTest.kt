@@ -103,8 +103,8 @@ class DreiAttestFeatureTest {
     }
 
     private fun addDreiattestHeaders(headers: MutableList<Pair<String, String>>) {
-        headers.add("dreiAttest-signature" to "signature")
-        headers.add("dreiAttest-uid" to "test")
+        headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")
+        headers.add(NetworkHelper.HEADER_UID to "test")
     }
 
     private fun HttpRequestBuilder.addHeaders(headers: List<Pair<String, String>>) {
