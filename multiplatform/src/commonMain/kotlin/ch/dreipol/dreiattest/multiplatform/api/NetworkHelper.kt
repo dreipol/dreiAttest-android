@@ -33,6 +33,7 @@ internal object NetworkHelper {
     internal const val HEADER_UID = "Dreiattest-uid"
     internal const val HEADER_SIGNATURE = "Dreiattest-signature"
     internal const val HEADER_NONCE = "Dreiattest-nonce"
+    internal const val HEADER_SHARED_SECRET = "Dreiattest-shared-secret"
 
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()
@@ -48,6 +49,10 @@ internal fun HttpRequestBuilder.setSignature(signature: String) {
 
 internal fun HttpRequestBuilder.setNonce(nonce: ByteArray) {
     headers.append(NetworkHelper.HEADER_NONCE, CryptoUtils.encodeToBase64(nonce))
+}
+
+internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String?) {
+    sharedSecret?.let { headers.append(NetworkHelper.HEADER_SHARED_SECRET, sharedSecret) }
 }
 
 internal fun HttpRequestBuilder.readBody(): ByteArray? {

@@ -23,6 +23,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 
     internal companion object {
         internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){0,255}")
+        private const val BYPASS_SECRET_ENV = "DREIATTEST_BYPASS_SECRET"
     }
 
     public override val uid: String
@@ -37,7 +38,8 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
-        this.middlewareAPI = MiddlewareAPI(baseAddress)
+        val bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
+        this.middlewareAPI = MiddlewareAPI(baseAddress, bypassSecret)
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
@@ -109,7 +111,8 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 public data class SessionConfiguration(
     val user: String,
     val level: Level = Level.SIGN_ONLY,
-    val deviceAttestationService: AttestationService
+    val deviceAttestationService: AttestationService,
+    val bypassSecret: String? = null,
 )
 
 public enum class Level {
