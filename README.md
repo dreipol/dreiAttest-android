@@ -58,3 +58,6 @@ HttpClient {
     }
 ```
 The feature is now signing every request, if the url is matching the configured `baseAddress` in the `DreiAttestService`.
+
+### Development
+During development it may be useful to setup a shared secret on the server to bypass dreiAttest. You can pass this shared secret to the library using the DREIATTEST_BYPASS_SECRET environment variable or by passing it to the AttestServie in its initializer.
