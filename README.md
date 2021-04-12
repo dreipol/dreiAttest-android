@@ -32,16 +32,10 @@ implementation("ch.dreipol.dreiattest.multiplatform:multiplatform-android:<versi
 ## Usage
 
 ### `DeviceAttestationServices`
-The library uses the `DeviceAttestationService` - class to generate the actual google or apple device attestation. You instantiate it as followed:
+The library uses the `DeviceAttestationService` - class to generate the actual google or apple device attestation
+
 #### Android
 For android dreiattest is using SafetyNet for your device attestation. To use this service you need to create an api key, which is described [here](https://developer.android.com/training/safetynet/attestation#obtain-api-key).
-```kotlin
-val attestationService = DeviceAttestationService(context = context, apiKey = <your SafetyNet API key>)
-```
-#### iOS
-```swift
-let attestationService = DeviceAttestationService()
-```
 
 ### `DreiAttestService`
 To use the `DreiAttestService` create a new instance and call the `initWith` - function, like followed:
