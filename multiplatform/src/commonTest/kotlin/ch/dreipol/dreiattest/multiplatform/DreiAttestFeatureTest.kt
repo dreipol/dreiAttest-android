@@ -100,6 +100,30 @@ class DreiAttestFeatureTest {
         }
     }
 
+    @KtorExperimentalAPI
+    @Test
+    fun testSharedSecret() {
+        runBlocking {
+            val attestService = AttestServiceMock()
+            val sharedSecret = "sharedSecret"
+            attestService.initWith(TEST_BASE_URL,
+                SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock(), bypassSecret = sharedSecret))
+            val headers = listOf("test" to "test")
+            val client = requestClientMock(attestService) {
+                val expectedHeaders = headers.toMutableList()
+                addBodyHeaders(expectedHeaders)
+                addSharedSecretHeader(expectedHeaders, sharedSecret)
+                assertEquals(expectedHeaders, it.headers.flattenEntries())
+            }
+            client.get<String> {
+                url {
+                    takeFrom(TEST_REQUEST_ENDPOINT)
+                }
+                addHeaders(headers)
+            }
+        }
+    }
+
     private fun addBodyHeaders(headers: MutableList<Pair<String, String>>) {
         headers.add("Accept" to "application/json")
         headers.add("Accept-Charset" to "UTF-8")
@@ -109,6 +133,10 @@ class DreiAttestFeatureTest {
         headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")
         headers.add(NetworkHelper.HEADER_UID to "test")
         headers.add(NetworkHelper.HEADER_NONCE to CryptoUtils.encodeToBase64("00000000-0000-0000-0000-000000000000".toByteArray()))
+    }
+
+    private fun addSharedSecretHeader(headers: MutableList<Pair<String, String>>, sharedSecret: String) {
+        headers.add(NetworkHelper.HEADER_SHARED_SECRET to sharedSecret)
     }
 
     private fun HttpRequestBuilder.addHeaders(headers: List<Pair<String, String>>) {
