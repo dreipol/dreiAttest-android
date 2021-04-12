@@ -7,12 +7,11 @@ import io.ktor.http.content.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-internal class MiddlewareAPI(private val middlewareUrl: String, private val bypassSecret: String?) {
+internal class MiddlewareAPI(private val middlewareUrl: String) {
     suspend fun getNonce(uid: String): ByteArray {
         return NetworkHelper.middlewareClient.get("nonce") {
             url.setBase(middlewareUrl)
             setUid(uid)
-            setSharedSecret(bypassSecret)
         }
     }
 
@@ -21,7 +20,6 @@ internal class MiddlewareAPI(private val middlewareUrl: String, private val bypa
             url.setBase(middlewareUrl)
             setUid(uid)
             setNonce(nonce)
-            setSharedSecret(bypassSecret)
             body = defaultSerializer().write(attestation)
         }
     }
@@ -32,7 +30,6 @@ internal class MiddlewareAPI(private val middlewareUrl: String, private val bypa
             body = TextContent(publicKey, ContentType.Text.Plain)
             setUid(uid)
             setNonce(nonce)
-            setSharedSecret(bypassSecret)
             setSignature(this)
         }
     }

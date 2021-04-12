@@ -35,6 +35,11 @@ public class DreiAttestFeature(private val attestService: AttestService) {
         if (attestService.shouldByPass(request.readUrl())) {
             return
         }
+        val bypassSecret = attestService.getBypassSecret()
+        if (bypassSecret != null) {
+            request.setSharedSecret(bypassSecret)
+            return
+        }
         val snonce = attestService.getRequestNonce()
         addSignature(request, snonce)
         setUid(request)

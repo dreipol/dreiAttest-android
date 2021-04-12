@@ -17,6 +17,7 @@ public interface AttestService {
     public suspend fun deregister()
     public fun shouldByPass(url: String): Boolean
     public suspend fun getRequestNonce(): ByteArray
+    public fun getBypassSecret(): String?
 }
 
 public class DreiAttestService(private val keystore: Keystore = DeviceKeystore(), settings: Settings = Settings()) : AttestService {
@@ -29,6 +30,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     public override val uid: String
         get() = uidBackingField
     private val sharedPreferences = SharedPreferences(settings)
+    private var bypassSecret: String? = null
     private lateinit var sessionConfiguration: SessionConfiguration
     private lateinit var middlewareAPI: MiddlewareAPI
     private lateinit var baseAddress: String
@@ -38,14 +40,18 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
-        val bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
-        this.middlewareAPI = MiddlewareAPI(baseAddress, bypassSecret)
+        bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
+        this.middlewareAPI = MiddlewareAPI(baseAddress)
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
 
     override fun shouldByPass(url: String): Boolean {
         return url.contains(baseAddress).not()
+    }
+
+    override fun getBypassSecret(): String? {
+        return bypassSecret
     }
 
     override suspend fun buildSignature(

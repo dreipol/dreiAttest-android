@@ -30,4 +30,8 @@ class AttestServiceMock(override val uid: String = "test") : AttestService {
     override suspend fun getRequestNonce(): ByteArray {
         return "00000000-0000-0000-0000-000000000000".toByteArray()
     }
+
+    override fun getBypassSecret(): String? {
+        return sessionConfiguration.bypassSecret
+    }
 }
