@@ -60,7 +60,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     ): String {
         mutex.withLock {
             if (keystore.hasKeyPair(uid).not()) {
-                val signatureNonce = middlewareAPI.getNonce(uid)
+                val signatureNonce = CryptoUtils.decodeBase64(middlewareAPI.getNonce(uid))
                 val publicKey = keystore.generateNewKeyPair(uid)
                 val nonce = CryptoUtils.hashSHA256(uid.toByteArray() + publicKey + signatureNonce)
                 val attestation = sessionConfiguration.deviceAttestationService.getAttestation(nonce, publicKey)
@@ -94,9 +94,11 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     }
 
     private suspend fun signRequest(request: Request, snonce: ByteArray): String {
-        val headerJson = Json.encodeToString(request.headers).toByteArray()
+        val sortedHeaders = request.headers.sortedBy { it.first }
+        val headerJson = Json.encodeToString(sortedHeaders).toByteArray()
+        val urlWithoutProtocol = request.url.removeProtocolFromUrl()
         val requestHash = CryptoUtils.hashSHA256(
-            request.url.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0)))
+            urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0)))
         return keystore.sign(uid, requestHash + snonce)
     }
 

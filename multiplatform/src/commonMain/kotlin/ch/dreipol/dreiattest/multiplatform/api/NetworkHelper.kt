@@ -36,6 +36,7 @@ internal object NetworkHelper {
     internal const val HEADER_SIGNATURE = "$HEADER_PREFIX-Signature"
     internal const val HEADER_NONCE = "$HEADER_PREFIX-Nonce"
     internal const val HEADER_SHARED_SECRET = "$HEADER_PREFIX-Shared-Secret"
+    internal const val HEADER_USER_HEADERS = "$HEADER_PREFIX-User-Headers"
 
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()
@@ -55,6 +56,12 @@ internal fun HttpRequestBuilder.setNonce(nonce: ByteArray) {
 
 internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String?) {
     sharedSecret?.let { headers.append(NetworkHelper.HEADER_SHARED_SECRET, sharedSecret) }
+}
+
+internal fun HttpRequestBuilder.setUserHeaders() {
+    val headerKeys = readHeaders().map { it.first }.toMutableList()
+    headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
+    headers.append(NetworkHelper.HEADER_USER_HEADERS, headerKeys.sortedBy { it }.joinToString(","))
 }
 
 internal fun HttpRequestBuilder.readBody(): ByteArray? {

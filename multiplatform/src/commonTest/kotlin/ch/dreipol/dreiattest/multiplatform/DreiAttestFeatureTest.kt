@@ -130,8 +130,11 @@ class DreiAttestFeatureTest {
     }
 
     private fun addDreiattestHeaders(headers: MutableList<Pair<String, String>>) {
-        headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")
         headers.add(NetworkHelper.HEADER_UID to "test")
+        val headerKeys = headers.map { it.first }.toMutableList()
+        headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
+        headers.add(NetworkHelper.HEADER_USER_HEADERS to headerKeys.sortedBy { it }.joinToString(","))
+        headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")
         headers.add(NetworkHelper.HEADER_NONCE to CryptoUtils.encodeToBase64("00000000-0000-0000-0000-000000000000".toByteArray()))
     }
 

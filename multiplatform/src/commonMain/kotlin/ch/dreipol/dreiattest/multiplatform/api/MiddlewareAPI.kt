@@ -8,7 +8,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 internal class MiddlewareAPI(private val middlewareUrl: String) {
-    suspend fun getNonce(uid: String): ByteArray {
+    suspend fun getNonce(uid: String): String {
         return NetworkHelper.middlewareClient.get("nonce") {
             url.setBase(middlewareUrl)
             setUid(uid)
@@ -29,8 +29,9 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
             url.setBase(middlewareUrl)
             body = TextContent(publicKey, ContentType.Text.Plain)
             setUid(uid)
-            setNonce(nonce)
+            setUserHeaders()
             setSignature(this)
+            setNonce(nonce)
         }
     }
 }

@@ -1,4 +1,5 @@
 @file:JvmName("Base64")
+
 package android.util
 
 import android.os.Build
@@ -9,5 +10,11 @@ public object Base64 {
     @RequiresApi(Build.VERSION_CODES.O)
     public fun encodeToString(input: ByteArray?, flags: Int): String {
         return java.util.Base64.getEncoder().encodeToString(input)
+    }
+
+    @JvmStatic
+    @RequiresApi(Build.VERSION_CODES.O)
+    public fun decode(input: String?, flags: Int): ByteArray {
+        return java.util.Base64.getDecoder().decode(input)
     }
 }

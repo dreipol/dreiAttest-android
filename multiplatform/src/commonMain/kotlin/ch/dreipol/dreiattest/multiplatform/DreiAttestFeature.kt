@@ -41,8 +41,9 @@ public class DreiAttestFeature(private val attestService: AttestService) {
             return
         }
         val snonce = attestService.getRequestNonce()
-        addSignature(request, snonce)
         setUid(request)
+        setUserHeaders(request)
+        addSignature(request, snonce)
         setNonce(request, snonce)
     }
 
@@ -59,5 +60,9 @@ public class DreiAttestFeature(private val attestService: AttestService) {
 
     private fun setNonce(request: HttpRequestBuilder, snonce: ByteArray) {
         request.setNonce(snonce)
+    }
+
+    private fun setUserHeaders(request: HttpRequestBuilder) {
+        request.setUserHeaders()
     }
 }

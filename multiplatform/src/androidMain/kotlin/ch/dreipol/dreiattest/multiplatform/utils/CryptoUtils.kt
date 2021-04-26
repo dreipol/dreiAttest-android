@@ -21,6 +21,10 @@ internal actual fun CryptoUtils.encodeToBase64(input: ByteArray): String {
     return Base64.encodeToString(input, Base64.DEFAULT)
 }
 
+internal actual fun CryptoUtils.decodeBase64(input: String): ByteArray {
+    return Base64.decode(input, Base64.DEFAULT)
+}
+
 internal actual fun CryptoUtils.encodeHashedToBase64(input: Hash): String {
     return encodeToBase64(input)
 }
