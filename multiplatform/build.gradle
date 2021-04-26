@@ -39,8 +39,8 @@ kotlin {
         implementation("io.ktor:ktor-client-serialization:$versions_ktor")
         implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions_serialization"
         implementation("co.touchlab:kermit:$versions_kermit")
-        implementation("com.russhwolf:multiplatform-settings:$versions_mpf_settings")
-        implementation("com.russhwolf:multiplatform-settings-no-arg:$versions_mpf_settings")
+        api("com.russhwolf:multiplatform-settings:$versions_mpf_settings")
+        api("com.russhwolf:multiplatform-settings-no-arg:$versions_mpf_settings")
     }
 
     sourceSets["commonTest"].dependencies {
