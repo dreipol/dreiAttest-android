@@ -41,7 +41,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
         bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
-        this.middlewareAPI = MiddlewareAPI(baseAddress)
+        this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest")
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }

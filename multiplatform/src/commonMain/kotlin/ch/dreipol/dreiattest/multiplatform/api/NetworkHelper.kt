@@ -30,7 +30,7 @@ internal var middlewareClientCreator = {
 
 internal object NetworkHelper {
 
-    internal const val HEADER_PREFIX = "Dreiattest"
+    private const val HEADER_PREFIX = "Dreiattest"
 
     internal const val HEADER_UID = "$HEADER_PREFIX-Uid"
     internal const val HEADER_SIGNATURE = "$HEADER_PREFIX-Signature"

@@ -9,6 +9,7 @@ import io.ktor.client.features.json.*
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 
 class DemoAPI(private val attestService: AttestService, private val baseUrl: String) {
@@ -30,7 +31,7 @@ class DemoAPI(private val attestService: AttestService, private val baseUrl: Str
         }
     }
 
-    suspend fun demoGet() {
+    suspend fun demoGet(): HttpResponse {
         return client.get("demo") {
             url.setBase(baseUrl)
         }

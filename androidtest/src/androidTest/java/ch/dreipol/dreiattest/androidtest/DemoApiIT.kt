@@ -26,7 +26,8 @@ class DemoApiIT {
     @Test
     fun testDreiAttestation() {
         val attestService = DreiAttestService(settings = MockSettings())
-        attestService.initWith("$baseUrl/dreiattest", SessionConfiguration("test", deviceAttestationService = DeviceAttestationService(
+        attestService.initWith(
+            baseUrl, SessionConfiguration("test", deviceAttestationService = DeviceAttestationService(
             InstrumentationRegistry.getInstrumentation().context, safetyNetAPIKey)))
         runBlocking {
             DemoAPI(attestService, baseUrl).demoGet()

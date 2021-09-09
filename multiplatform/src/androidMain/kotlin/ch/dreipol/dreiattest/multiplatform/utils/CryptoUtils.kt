@@ -18,7 +18,7 @@ internal actual fun CryptoUtils.generateUuid(): String {
 }
 
 internal actual fun CryptoUtils.encodeToBase64(input: ByteArray): String {
-    return Base64.encodeToString(input, Base64.DEFAULT)
+    return Base64.encodeToString(input, Base64.DEFAULT).trim()
 }
 
 internal actual fun CryptoUtils.decodeBase64(input: String): ByteArray {
