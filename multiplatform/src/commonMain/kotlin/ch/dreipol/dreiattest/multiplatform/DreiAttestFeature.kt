@@ -37,10 +37,12 @@ public class DreiAttestFeature(private val attestService: AttestService) {
         }
         val bypassSecret = attestService.getBypassSecret()
         if (bypassSecret != null) {
+            setCommonHeaders(request)
             request.setSharedSecret(bypassSecret)
             return
         }
         val snonce = attestService.getRequestNonce()
+        setCommonHeaders(request)
         setUid(request)
         setUserHeaders(request)
         addSignature(request, snonce)
@@ -66,5 +68,9 @@ public class DreiAttestFeature(private val attestService: AttestService) {
 
     private fun setUserHeaders(request: HttpRequestBuilder) {
         request.setUserHeaders()
+    }
+
+    private fun setCommonHeaders(request: HttpRequestBuilder) {
+        request.setCommonHeaders(attestService.systemInfo)
     }
 }

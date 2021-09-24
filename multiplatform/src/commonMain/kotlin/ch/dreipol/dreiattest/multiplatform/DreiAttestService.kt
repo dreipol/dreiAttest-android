@@ -4,6 +4,7 @@ import ch.dreipol.dreiattest.multiplatform.api.*
 import ch.dreipol.dreiattest.multiplatform.utils.*
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.invoke
+import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -12,6 +13,7 @@ import kotlinx.serialization.json.Json
 
 public interface AttestService {
     public val uid: String
+    public val systemInfo: SystemInfo
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
     public suspend fun buildSignature(request: Request, snonce: String): String
     public suspend fun deregister()
@@ -29,6 +31,8 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 
     public override val uid: String
         get() = uidBackingField
+    override val systemInfo: SystemInfo
+        get() = sessionConfiguration.deviceAttestationProvider.systemInfo
     private val sharedPreferences = SharedPreferences(settings)
     private var bypassSecret: String? = null
     private lateinit var sessionConfiguration: SessionConfiguration
@@ -41,7 +45,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
         bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
-        this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest")
+        this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest", sessionConfiguration.deviceAttestationProvider.systemInfo)
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
@@ -120,7 +124,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 public data class SessionConfiguration(
     val user: String = "",
     val level: Level = Level.SIGN_ONLY,
-    val deviceAttestationService: AttestationService,
+    val deviceAttestationProvider: AttestationProvider,
     val bypassSecret: String? = null,
 )
 
@@ -128,8 +132,7 @@ public enum class Level {
     SIGN_ONLY,
 }
 
-public interface AttestationService {
-    public suspend fun getAttestation(nonce: Hash, publicKey: ByteArray): Attestation
+public interface AttestationProvider {
+    public val systemInfo: SystemInfo
+    public suspend fun getAttestation(nonce: Hash, publicKey: String): Attestation
 }
-
-public expect class DeviceAttestationService : AttestationService

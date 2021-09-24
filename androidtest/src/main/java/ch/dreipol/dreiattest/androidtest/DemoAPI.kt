@@ -32,7 +32,7 @@ class DemoAPI(private val attestService: AttestService, private val baseUrl: Str
     }
 
     suspend fun demoGet(): HttpResponse {
-        return client.get("demo") {
+        return client.get("demo/") {
             url.setBase(baseUrl)
         }
     }

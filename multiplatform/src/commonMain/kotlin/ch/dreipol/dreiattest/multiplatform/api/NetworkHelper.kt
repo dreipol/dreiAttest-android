@@ -1,7 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.api
 
-import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
-import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
+import ch.dreipol.dreiattest.multiplatform.DreiAttest
+import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
 import co.touchlab.kermit.CommonLogger
 import co.touchlab.kermit.Kermit
 import io.ktor.client.*
@@ -38,6 +38,12 @@ internal object NetworkHelper {
     internal const val HEADER_SHARED_SECRET = "$HEADER_PREFIX-Shared-Secret"
     internal const val HEADER_USER_HEADERS = "$HEADER_PREFIX-User-Headers"
 
+    internal const val HEADER_LIBRARY_VERSION = "$HEADER_PREFIX-Library-Version"
+    internal const val HEADER_APP_VERSION = "$HEADER_PREFIX-App-Version"
+    internal const val HEADER_APP_BUILD = "$HEADER_PREFIX-App-Build"
+    internal const val HEADER_APP_IDENTIFIER = "$HEADER_PREFIX-App-Identifier"
+    internal const val HEADER_OS = "$HEADER_PREFIX-OS"
+
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()
 }
@@ -62,6 +68,14 @@ internal fun HttpRequestBuilder.setUserHeaders() {
     val headerKeys = readHeaders().map { it.first }.toMutableList()
     headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
     headers.append(NetworkHelper.HEADER_USER_HEADERS, headerKeys.sortedBy { it }.joinToString(","))
+}
+
+internal fun HttpRequestBuilder.setCommonHeaders(systemInfo: SystemInfo) {
+    headers.append(NetworkHelper.HEADER_LIBRARY_VERSION, DreiAttest.version)
+    headers.append(NetworkHelper.HEADER_APP_VERSION, systemInfo.appVersion)
+    headers.append(NetworkHelper.HEADER_APP_BUILD, systemInfo.appBuild)
+    headers.append(NetworkHelper.HEADER_APP_IDENTIFIER, systemInfo.appIdentifier)
+    headers.append(NetworkHelper.HEADER_OS, systemInfo.osVersion)
 }
 
 internal fun HttpRequestBuilder.readBody(): ByteArray? {

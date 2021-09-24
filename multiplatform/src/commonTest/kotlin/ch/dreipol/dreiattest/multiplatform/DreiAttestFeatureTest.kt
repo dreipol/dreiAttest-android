@@ -2,7 +2,7 @@ package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.NetworkHelper
 import ch.dreipol.dreiattest.multiplatform.mock.AttestServiceMock
-import ch.dreipol.dreiattest.multiplatform.mock.AttestationServiceMock
+import ch.dreipol.dreiattest.multiplatform.mock.AttestationProviderMock
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BYPASS_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.TEST_REQUEST_ENDPOINT
@@ -28,7 +28,7 @@ class DreiAttestFeatureTest {
     fun testSingedRequest() {
         runBlocking {
             val attestService = AttestServiceMock()
-            attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock()))
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationProvider = AttestationProviderMock()))
             val headers = listOf("test" to "test", "test2" to "test2")
             val body = "testBody"
             val client = requestClientMock(attestService) {
@@ -59,7 +59,7 @@ class DreiAttestFeatureTest {
     fun testSingedRequestWithoutBody() {
         runBlocking {
             val attestService = AttestServiceMock()
-            attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock()))
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationProvider = AttestationProviderMock()))
             val headers = listOf("test" to "test")
             val client = requestClientMock(attestService) {
                 assertNotNull(it.headers[NetworkHelper.HEADER_SIGNATURE])
@@ -85,7 +85,7 @@ class DreiAttestFeatureTest {
     fun testBypass() {
         runBlocking {
             val attestService = AttestServiceMock()
-            attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock()))
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration("testUser", deviceAttestationProvider = AttestationProviderMock()))
             val client = requestClientMock(attestService) {
                 assertNull(it.headers[NetworkHelper.HEADER_SIGNATURE])
                 assertNull(it.headers[NetworkHelper.HEADER_UID])
@@ -106,8 +106,10 @@ class DreiAttestFeatureTest {
         runBlocking {
             val attestService = AttestServiceMock()
             val sharedSecret = "sharedSecret"
-            attestService.initWith(TEST_BASE_URL,
-                SessionConfiguration("testUser", deviceAttestationService = AttestationServiceMock(), bypassSecret = sharedSecret))
+            attestService.initWith(
+                TEST_BASE_URL,
+                SessionConfiguration("testUser", deviceAttestationProvider = AttestationProviderMock(), bypassSecret = sharedSecret)
+            )
             val headers = listOf("test" to "test")
             val client = requestClientMock(attestService) {
                 val expectedHeaders = headers.toMutableList()

@@ -3,7 +3,6 @@ plugins {
     id("org.jetbrains.kotlin.multiplatform")
     id("maven-publish")
     id 'org.jetbrains.kotlin.plugin.serialization' version "$versions_kotlin"
-    id("org.jetbrains.kotlin.native.cocoapods")
 }
 apply plugin: "org.jlleitschuh.gradle.ktlint"
 
@@ -12,24 +11,14 @@ group = "ch.dreipol.dreiattest.multiplatform"
 
 kotlin {
     ios("ios") {
-        binaries.withType(org.jetbrains.kotlin.gradle.plugin.mpp.Framework).all {
-            transitiveExport = true
+        binaries {
+            framework()
         }
     }
 
     android("android") {
         publishAllLibraryVariants()
     }
-
-    cocoapods {
-        // Configure fields required by CocoaPods.
-        summary = "Multiplatform Redux Sample"
-        homepage = "https://github.com/dreipol/multiplatform-redux-sample"
-        ios.deploymentTarget = "14.0"
-        frameworkName = "ReduxSampleShared"
-    }
-
-    explicitApi()
 
     sourceSets["commonMain"].dependencies {
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions_coroutines")

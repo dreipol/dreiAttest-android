@@ -1,5 +1,6 @@
 package ch.dreipol.dreiattest.multiplatform.api
 
+import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.http.*
@@ -7,10 +8,11 @@ import io.ktor.http.content.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-internal class MiddlewareAPI(private val middlewareUrl: String) {
+internal class MiddlewareAPI(private val middlewareUrl: String, private val systemInfo: SystemInfo) {
     suspend fun getNonce(uid: String): String {
         return NetworkHelper.middlewareClient.get("nonce") {
             url.setBase(middlewareUrl)
+            setCommonHeaders(systemInfo)
             setUid(uid)
         }
     }
@@ -19,6 +21,7 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
         val result = defaultSerializer().write(attestation)
         return NetworkHelper.middlewareClient.post("key") {
             url.setBase(middlewareUrl)
+            setCommonHeaders(systemInfo)
             setUid(uid)
             setNonce(nonce)
             body = defaultSerializer().write(attestation)
@@ -29,6 +32,7 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
         return NetworkHelper.middlewareClient.delete("key") {
             url.setBase(middlewareUrl)
             body = TextContent(publicKey, ContentType.Text.Plain)
+            setCommonHeaders(systemInfo)
             setUid(uid)
             setUserHeaders()
             setSignature(this)
