@@ -47,10 +47,12 @@ public class DreiAttestFeature(private val attestService: AttestService) {
         setNonce(request, snonce)
     }
 
-    private suspend fun addSignature(request: HttpRequestBuilder, snonce: ByteArray) {
+    private suspend fun addSignature(request: HttpRequestBuilder, snonce: String) {
         request.setSignature(
-            attestService.buildSignature(Request(request.readUrl(), request.readMethod(), request.readHeaders(), request.readBody()),
-                snonce)
+            attestService.buildSignature(
+                Request(request.readUrl(), request.readMethod(), request.readHeaders(), request.readBody()),
+                snonce
+            )
         )
     }
 
@@ -58,7 +60,7 @@ public class DreiAttestFeature(private val attestService: AttestService) {
         request.setUid(attestService.uid)
     }
 
-    private fun setNonce(request: HttpRequestBuilder, snonce: ByteArray) {
+    private fun setNonce(request: HttpRequestBuilder, snonce: String) {
         request.setNonce(snonce)
     }
 

@@ -50,8 +50,8 @@ internal fun HttpRequestBuilder.setSignature(signature: String) {
     headers.append(NetworkHelper.HEADER_SIGNATURE, signature)
 }
 
-internal fun HttpRequestBuilder.setNonce(nonce: ByteArray) {
-    headers.append(NetworkHelper.HEADER_NONCE, CryptoUtils.encodeToBase64(nonce))
+internal fun HttpRequestBuilder.setNonce(nonce: String) {
+    headers.append(NetworkHelper.HEADER_NONCE, nonce)
 }
 
 internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String?) {

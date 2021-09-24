@@ -15,7 +15,8 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
         }
     }
 
-    suspend fun setKey(attestation: Attestation, uid: String, nonce: ByteArray) {
+    suspend fun setKey(attestation: Attestation, uid: String, nonce: String) {
+        val result = defaultSerializer().write(attestation)
         return NetworkHelper.middlewareClient.post("key") {
             url.setBase(middlewareUrl)
             setUid(uid)
@@ -24,7 +25,7 @@ internal class MiddlewareAPI(private val middlewareUrl: String) {
         }
     }
 
-    suspend fun deleteKey(uid: String, publicKey: String, nonce: ByteArray, setSignature: suspend (HttpRequestBuilder) -> Unit) {
+    suspend fun deleteKey(uid: String, publicKey: String, nonce: String, setSignature: suspend (HttpRequestBuilder) -> Unit) {
         return NetworkHelper.middlewareClient.delete("key") {
             url.setBase(middlewareUrl)
             body = TextContent(publicKey, ContentType.Text.Plain)

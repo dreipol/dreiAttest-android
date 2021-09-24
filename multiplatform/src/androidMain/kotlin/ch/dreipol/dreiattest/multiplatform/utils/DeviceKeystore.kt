@@ -43,7 +43,7 @@ public actual class DeviceKeystore : Keystore {
             throw IllegalArgumentException()
         }
         return CryptoUtils.encodeToBase64(
-            Signature.getInstance("SHA256").run {
+            Signature.getInstance("SHA256withECDSA").run {
                 initSign(entry.privateKey)
                 update(content)
                 sign()

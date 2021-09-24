@@ -13,10 +13,10 @@ import kotlinx.serialization.json.Json
 public interface AttestService {
     public val uid: String
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
-    public suspend fun buildSignature(request: Request, snonce: ByteArray): String
+    public suspend fun buildSignature(request: Request, snonce: String): String
     public suspend fun deregister()
     public fun shouldByPass(url: String): Boolean
-    public suspend fun getRequestNonce(): ByteArray
+    public suspend fun getRequestNonce(): String
     public fun getBypassSecret(): String?
 }
 
@@ -56,14 +56,14 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 
     override suspend fun buildSignature(
         request: Request,
-        snonce: ByteArray,
+        snonce: String,
     ): String {
         mutex.withLock {
             if (keystore.hasKeyPair(uid).not()) {
-                val signatureNonce = CryptoUtils.decodeBase64(middlewareAPI.getNonce(uid))
-                val publicKey = keystore.generateNewKeyPair(uid)
-                val nonce = CryptoUtils.hashSHA256(uid.toByteArray() + publicKey + signatureNonce)
-                val attestation = sessionConfiguration.deviceAttestationService.getAttestation(nonce, publicKey)
+                val signatureNonce = middlewareAPI.getNonce(uid).trim('"')
+                val publicKey = CryptoUtils.encodeToBase64(keystore.generateNewKeyPair(uid))
+                val nonce = CryptoUtils.hashSHA256((uid + publicKey + signatureNonce).toByteArray(Charsets.UTF_8))
+                val attestation = sessionConfiguration.deviceAttestationProvider.getAttestation(nonce, publicKey)
                 middlewareAPI.setKey(attestation, uid, signatureNonce)
             }
         }
@@ -88,18 +88,19 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         }
     }
 
-    override suspend fun getRequestNonce(): ByteArray {
+    override suspend fun getRequestNonce(): String {
         // TODO check level and request nonce from middleware if configured
-        return "00000000-0000-0000-0000-000000000000".toByteArray()
+        return "00000000-0000-0000-0000-000000000000"
     }
 
-    private suspend fun signRequest(request: Request, snonce: ByteArray): String {
+    private suspend fun signRequest(request: Request, snonce: String): String {
         val sortedHeaders = request.headers.sortedBy { it.first }
         val headerJson = Json.encodeToString(sortedHeaders).toByteArray()
         val urlWithoutProtocol = request.url.removeProtocolFromUrl()
         val requestHash = CryptoUtils.hashSHA256(
-            urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0)))
-        return keystore.sign(uid, requestHash + snonce)
+            urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0))
+        )
+        return keystore.sign(uid, requestHash + snonce.toByteArray(Charsets.UTF_8))
     }
 
     private fun generateUid(user: String): String {
@@ -117,7 +118,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 }
 
 public data class SessionConfiguration(
-    val user: String,
+    val user: String = "",
     val level: Level = Level.SIGN_ONLY,
     val deviceAttestationService: AttestationService,
     val bypassSecret: String? = null,

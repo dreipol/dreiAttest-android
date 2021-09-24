@@ -11,5 +11,4 @@ class StringUtilsTest {
         val url = "https://www.google.ch"
         assertEquals("www.google.ch", url.removeProtocolFromUrl())
     }
-
 }
