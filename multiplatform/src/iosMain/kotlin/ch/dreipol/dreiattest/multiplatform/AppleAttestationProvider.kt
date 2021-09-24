@@ -23,7 +23,7 @@ private class AttestationCompletable {
 
 internal const val platformDriver = "apple"
 
-public class AppleAttestationProvider(): AttestationProvider {
+public class AppleAttestationProvider() : AttestationProvider {
     private val service = DCAppAttestService.sharedService
     override val systemInfo: SystemInfo = DeviceSystemInfo
 

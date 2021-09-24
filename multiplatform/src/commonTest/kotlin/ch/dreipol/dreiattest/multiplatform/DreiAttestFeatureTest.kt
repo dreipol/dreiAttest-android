@@ -3,6 +3,7 @@ package ch.dreipol.dreiattest.multiplatform
 import ch.dreipol.dreiattest.multiplatform.api.NetworkHelper
 import ch.dreipol.dreiattest.multiplatform.mock.AttestServiceMock
 import ch.dreipol.dreiattest.multiplatform.mock.AttestationProviderMock
+import ch.dreipol.dreiattest.multiplatform.mock.SystemInfoMock
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BYPASS_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.TEST_REQUEST_ENDPOINT
@@ -114,6 +115,7 @@ class DreiAttestFeatureTest {
             val client = requestClientMock(attestService) {
                 val expectedHeaders = headers.toMutableList()
                 addBodyHeaders(expectedHeaders)
+                addSystemInfoHeaders(expectedHeaders)
                 addSharedSecretHeader(expectedHeaders, sharedSecret)
                 assertEquals(expectedHeaders, it.headers.flattenEntries())
             }
@@ -131,13 +133,22 @@ class DreiAttestFeatureTest {
         headers.add("Accept-Charset" to "UTF-8")
     }
 
+    private fun addSystemInfoHeaders(headers: MutableList<Pair<String, String>>) {
+        headers.add(NetworkHelper.HEADER_LIBRARY_VERSION to "kotlin-1.0.1")
+        headers.add(NetworkHelper.HEADER_APP_VERSION to SystemInfoMock.appVersion)
+        headers.add(NetworkHelper.HEADER_APP_BUILD to SystemInfoMock.appBuild)
+        headers.add(NetworkHelper.HEADER_APP_IDENTIFIER to SystemInfoMock.appIdentifier)
+        headers.add(NetworkHelper.HEADER_OS to SystemInfoMock.osVersion)
+    }
+
     private fun addDreiattestHeaders(headers: MutableList<Pair<String, String>>) {
+        addSystemInfoHeaders(headers)
         headers.add(NetworkHelper.HEADER_UID to "test")
         val headerKeys = headers.map { it.first }.toMutableList()
         headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
         headers.add(NetworkHelper.HEADER_USER_HEADERS to headerKeys.sortedBy { it }.joinToString(","))
         headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")
-        headers.add(NetworkHelper.HEADER_NONCE to CryptoUtils.encodeToBase64("00000000-0000-0000-0000-000000000000".toByteArray()))
+        headers.add(NetworkHelper.HEADER_NONCE to "00000000-0000-0000-0000-000000000000")
     }
 
     private fun addSharedSecretHeader(headers: MutableList<Pair<String, String>>, sharedSecret: String) {

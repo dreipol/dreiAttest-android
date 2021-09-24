@@ -6,7 +6,7 @@ import platform.Foundation.CFBridgingRelease
 import platform.Foundation.NSBundle
 import platform.UIKit.UIDevice
 
-internal object DeviceSystemInfo: SystemInfo {
+internal object DeviceSystemInfo : SystemInfo {
     private const val VERSION_KEY = "CFBundleShortVersionString"
     private val BUILD_KEY = CFBridgingRelease(kCFBundleVersionKey) as String
     private val BUNDLE_ID_KEY = CFBridgingRelease(kCFBundleIdentifierKey) as String
