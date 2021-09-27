@@ -8,8 +8,6 @@ import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 public interface AttestService {
     public val uid: String
@@ -98,13 +96,14 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     }
 
     private suspend fun signRequest(request: Request, snonce: String): String {
-        val sortedHeaders = request.headers.sortedBy { it.first }
-        val headerJson = Json.encodeToString(sortedHeaders).toByteArray()
+        val headerJson = JsonUtil.sortedJsonData(request.headers.toMap())
+
         val urlWithoutProtocol = request.url.removeProtocolFromUrl()
         val requestHash = CryptoUtils.hashSHA256(
             urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0))
         )
-        return keystore.sign(uid, requestHash + snonce.toByteArray(Charsets.UTF_8))
+        val nonce = CryptoUtils.rehashSHA256(requestHash + snonce.toByteArray(Charsets.UTF_8))
+        return keystore.sign(uid, nonce)
     }
 
     private fun generateUid(user: String): String {

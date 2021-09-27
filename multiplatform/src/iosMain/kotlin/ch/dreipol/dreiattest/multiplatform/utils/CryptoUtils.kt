@@ -18,11 +18,16 @@ public actual operator fun Hash.plus(other: ByteArray): Hash {
 @ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.hashSHA256(input: ByteArray): Hash {
     val data = Conversion.byteArrayToData(input)
+    return rehashSHA256(data)
+}
+
+@ExperimentalUnsignedTypes
+internal actual fun CryptoUtils.rehashSHA256(input: Hash): Hash {
     val hash = NSMutableData.create(length = CC_SHA256_DIGEST_LENGTH.toULong())
         ?: throw Exception("Could not create data.")
     hash.mutableBytes?.let {
         @Suppress("UNCHECKED_CAST")
-        CC_SHA256(data.bytes, data.length.toUInt(), it as CPointer<UByteVar>)
+        CC_SHA256(input.bytes, input.length.toUInt(), it as CPointer<UByteVar>)
     }
     return hash
 }
