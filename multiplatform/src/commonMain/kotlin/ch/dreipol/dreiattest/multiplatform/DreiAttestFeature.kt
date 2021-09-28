@@ -3,6 +3,7 @@ package ch.dreipol.dreiattest.multiplatform
 import ch.dreipol.dreiattest.multiplatform.api.*
 import ch.dreipol.dreiattest.multiplatform.utils.Request
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.util.*
@@ -23,6 +24,11 @@ public class DreiAttestFeature(private val attestService: AttestService) {
         override fun install(feature: DreiAttestFeature, scope: HttpClient) {
             scope.sendPipeline.intercept(HttpSendPipeline.State) {
                 feature.addHeaders(context)
+            }
+            scope.sendPipeline.intercept(HttpSendPipeline.Receive) {
+                if ((subject as? HttpClientCall)?.response?.status?.isRedirect() == true) {
+                    context.headers.names().filter(NetworkHelper::isDreiattestHeader).forEach(context.headers::remove)
+                }
             }
         }
     }

@@ -9,6 +9,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.http.content.*
 import kotlinx.serialization.json.Json
 
@@ -46,7 +47,11 @@ internal object NetworkHelper {
 
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()
+
+    internal fun isDreiattestHeader(header: String): Boolean = header.startsWith("Dreiattest-")
 }
+
+internal fun HttpStatusCode.isRedirect(): Boolean = 300 <= value && value < 400
 
 internal fun HttpRequestBuilder.setUid(uid: String) {
     headers.append(NetworkHelper.HEADER_UID, uid)
