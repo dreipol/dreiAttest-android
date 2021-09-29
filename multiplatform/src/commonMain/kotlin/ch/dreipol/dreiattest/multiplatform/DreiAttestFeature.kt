@@ -8,6 +8,8 @@ import io.ktor.client.features.*
 import io.ktor.client.request.*
 import io.ktor.util.*
 
+public class InvalidHeaderException: Exception("Requests should not already contain \"Dreiattest-\" headers!")
+
 /**
  * install this feature in your client to sign your requests
  */
@@ -41,6 +43,10 @@ public class DreiAttestFeature(private val attestService: AttestService) {
         if (attestService.shouldByPass(request.readUrl())) {
             return
         }
+        if (request.readHeaders().any { NetworkHelper.isDreiattestHeader(it.first) }) {
+            throw InvalidHeaderException()
+        }
+
         val bypassSecret = attestService.getBypassSecret()
         if (bypassSecret != null) {
             setCommonHeaders(request)
