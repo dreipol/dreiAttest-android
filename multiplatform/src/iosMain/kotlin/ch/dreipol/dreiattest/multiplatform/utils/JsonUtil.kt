@@ -1,9 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
 import platform.Foundation.NSJSONSerialization
-import platform.Foundation.NSJSONWritingPrettyPrinted
 import platform.Foundation.NSJSONWritingSortedKeys
-import platform.Foundation.NSString
 
 actual object JsonUtil {
     @ExperimentalUnsignedTypes

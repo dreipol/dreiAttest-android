@@ -1,6 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.api
 
 import ch.dreipol.dreiattest.multiplatform.DreiAttest
+import ch.dreipol.dreiattest.multiplatform.utils.Request
 import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
 import co.touchlab.kermit.CommonLogger
 import co.touchlab.kermit.Kermit
@@ -70,7 +71,7 @@ internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String?) {
 }
 
 internal fun HttpRequestBuilder.setUserHeaders() {
-    val headerKeys = readHeaders().map { it.first }.toMutableList()
+    val headerKeys = signableHeaders().map { it.first }.toMutableList()
     headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
     headers.append(NetworkHelper.HEADER_USER_HEADERS, headerKeys.sortedBy { it }.joinToString(","))
 }
@@ -99,6 +100,15 @@ internal fun HttpRequestBuilder.readHeaders(): List<Pair<String, String>> {
     }
     return headers
 }
+
+private fun Iterable<Pair<String, String>>.signableHeaders(): Collection<Pair<String, String>> =
+    filterNot { it.first.startsWith("Accept") || it.first == "User-Agent" }
+
+internal fun Request.signableHeaders(): Collection<Pair<String, String>> =
+    headers.signableHeaders()
+
+internal  fun HttpRequestBuilder.signableHeaders(): Collection<Pair<String, String>> =
+    readHeaders().signableHeaders()
 
 internal fun HttpRequestBuilder.readMethod(): String {
     return method.value

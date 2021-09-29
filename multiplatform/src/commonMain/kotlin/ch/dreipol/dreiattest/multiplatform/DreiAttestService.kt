@@ -96,7 +96,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     }
 
     private suspend fun signRequest(request: Request, snonce: String): String {
-        val headerJson = JsonUtil.sortedJsonData(request.headers.toMap())
+        val headerJson = JsonUtil.sortedJsonData(request.signableHeaders().toMap())
 
         val urlWithoutProtocol = request.url.removeProtocolFromUrl()
         val requestHash = CryptoUtils.hashSHA256(
