@@ -40,9 +40,12 @@ For android dreiattest is using SafetyNet for your device attestation. To use th
 ### `DreiAttestService`
 To use the `DreiAttestService` create a new instance and call the `initWith` - function, as follows:
 ```kotlin
+val attestationProvider = ... // GoogleAttestationProvider on Android / AppleAttestationProvider on iOS
 val attestService = DreiAttestService()
-attestService.initWith(baseAddress = "https://example.com/attested", sessionConfiguration = SessionConfiguration(user = "hello@example.com", deviceAttestationService = deviceAttestationService))
+attestService.initWith(baseAddress = "https://example.com/attested", sessionConfiguration = SessionConfiguration(user = "hello@example.com", attestationProvider = attestationProvider))
 ```
+
+You would typically want to create the `GoogleAttestionProvider` in your application's `onCreate` and the `AppleAttestationProvider` in your `application(_:didFinishLaunchingWithOptions:)` method and pass it to your multiplatform code from there.
 
 ### Ktor - feature
 There is a ktor-client feature availlable, you can use it as follows:
