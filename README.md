@@ -42,7 +42,11 @@ To use the `DreiAttestService` create a new instance and call the `initWith` - f
 ```kotlin
 val attestationProvider = ... // GoogleAttestationProvider on Android / AppleAttestationProvider on iOS
 val attestService = DreiAttestService()
-attestService.initWith(baseAddress = "https://example.com/attested", sessionConfiguration = SessionConfiguration(user = "hello@example.com", attestationProvider = attestationProvider))
+try {
+    attestService.initWith(baseAddress = "https://example.com/attested", sessionConfiguration = SessionConfiguration(user = "hello@example.com", attestationProvider = attestationProvider))
+} catch (e: UnsupportedException) {
+    // handle running on unsupported devices such as iOS Simulators
+}
 ```
 
 You would typically want to create the `GoogleAttestionProvider` in your application's `onCreate` and the `AppleAttestationProvider` in your `application(_:didFinishLaunchingWithOptions:)` method and pass it to your multiplatform code from there.
