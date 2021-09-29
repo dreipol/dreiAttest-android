@@ -26,6 +26,8 @@ internal const val platformDriver = "apple"
 public class AppleAttestationProvider() : AttestationProvider {
     private val service = DCAppAttestService.sharedService
     override val systemInfo: SystemInfo = DeviceSystemInfo
+    override val isSupported: Boolean
+        get() = service.isSupported()
 
     public override suspend fun getAttestation(nonce: Hash, publicKey: String): Attestation {
         val completable = AttestationCompletable()

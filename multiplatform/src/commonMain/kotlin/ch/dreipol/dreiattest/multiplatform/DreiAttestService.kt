@@ -9,6 +9,8 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
+public class UnsupportedException: Exception("Attestation is not supported on this device!")
+
 public interface AttestService {
     public val uid: String
     public val systemInfo: SystemInfo
@@ -40,9 +42,13 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     private val mutex = Mutex()
 
     override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
+        bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
+        if (bypassSecret == null && !sessionConfiguration.deviceAttestationProvider.isSupported) {
+            throw UnsupportedException()
+        }
+
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
-        bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
         this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest", sessionConfiguration.deviceAttestationProvider.systemInfo)
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
@@ -133,5 +139,6 @@ public enum class Level {
 
 public interface AttestationProvider {
     public val systemInfo: SystemInfo
+    public val isSupported: Boolean
     public suspend fun getAttestation(nonce: Hash, publicKey: String): Attestation
 }

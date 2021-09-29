@@ -31,13 +31,11 @@ private class SignatureCompletable {
 public actual class DeviceKeystore : Keystore {
     private val service = DCAppAttestService.sharedService
 
-    init {
-        assert(service.isSupported())
-    }
-
     private fun keyFor(alias: String): String = "dreiAttest.Key.keyId(uid: \"${alias}\")"
 
     override suspend fun generateNewKeyPair(alias: String): ByteArray {
+        assert(service.isSupported())
+
         val completable = KeyGenCompletable()
         val receiver = completable::receiveKey
         receiver.freeze()
@@ -63,6 +61,8 @@ public actual class DeviceKeystore : Keystore {
     }
 
     override suspend fun sign(alias: String, content: Hash): String {
+        assert(service.isSupported())
+
         val keyId = NSUserDefaults.standardUserDefaults.stringForKey(keyFor(alias))
             ?: throw IllegalArgumentException()
 
