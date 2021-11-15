@@ -89,8 +89,8 @@ class DreiAttestServiceTest {
         val attestService = DreiAttestService(KeystoreMock, mockSettings)
         attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
 
-        assertFalse(attestService.shouldByPass("$TEST_BASE_URL/test"))
-        assertTrue(attestService.shouldByPass("https://test2.dreipol.ch/test"))
+        assertTrue(attestService.shouldHandle("$TEST_BASE_URL/test"))
+        assertFalse(attestService.shouldHandle("https://test2.dreipol.ch/test"))
     }
 
     @Test

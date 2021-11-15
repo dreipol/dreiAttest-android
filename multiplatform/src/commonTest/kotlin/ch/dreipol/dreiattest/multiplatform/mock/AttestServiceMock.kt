@@ -25,8 +25,8 @@ class AttestServiceMock(override val uid: String = "test") : AttestService {
         // nothing to do
     }
 
-    override fun shouldByPass(url: String): Boolean {
-        return url.contains(baseAddress).not()
+    override fun shouldHandle(url: String): Boolean {
+        return url.contains(baseAddress)
     }
 
     override suspend fun getRequestNonce(): String {

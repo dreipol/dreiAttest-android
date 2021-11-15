@@ -40,7 +40,7 @@ public class DreiAttestFeature(private val attestService: AttestService) {
     }
 
     public suspend fun addHeaders(request: HttpRequestBuilder) {
-        if (attestService.shouldByPass(request.readUrl())) {
+        if (!attestService.shouldHandle(request.readUrl())) {
             return
         }
         if (request.readHeaders().any { NetworkHelper.isDreiattestHeader(it.first) }) {

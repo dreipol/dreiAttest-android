@@ -66,8 +66,8 @@ internal fun HttpRequestBuilder.setNonce(nonce: String) {
     headers.append(NetworkHelper.HEADER_NONCE, nonce)
 }
 
-internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String?) {
-    sharedSecret?.let { headers.append(NetworkHelper.HEADER_SHARED_SECRET, sharedSecret) }
+internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String) {
+    headers.append(NetworkHelper.HEADER_SHARED_SECRET, sharedSecret)
 }
 
 internal fun HttpRequestBuilder.setUserHeaders() {

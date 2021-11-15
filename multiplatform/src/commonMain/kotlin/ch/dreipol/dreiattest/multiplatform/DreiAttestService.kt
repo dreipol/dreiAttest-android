@@ -17,7 +17,7 @@ public interface AttestService {
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
     public suspend fun buildSignature(request: Request, snonce: String): String
     public suspend fun deregister()
-    public fun shouldByPass(url: String): Boolean
+    public fun shouldHandle(url: String): Boolean
     public suspend fun getRequestNonce(): String
     public fun getBypassSecret(): String?
 }
@@ -54,8 +54,8 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
 
-    override fun shouldByPass(url: String): Boolean {
-        return url.contains(baseAddress).not()
+    override fun shouldHandle(url: String): Boolean {
+        return url.contains(baseAddress)
     }
 
     override fun getBypassSecret(): String? {
@@ -66,8 +66,10 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         request: Request,
         snonce: String,
     ): String {
-        mutex.withLock {
-            if (keystore.hasKeyPair(uid).not()) {
+        if (keystore.hasKeyPair(uid).not()) {
+            mutex.withLock {
+                if (keystore.hasKeyPair(uid)) { return@withLock }
+
                 val signatureNonce = middlewareAPI.getNonce(uid).trim('"')
                 val publicKey = CryptoUtils.encodeToBase64(keystore.generateNewKeyPair(uid))
                 val nonce = CryptoUtils.hashSHA256((uid + publicKey + signatureNonce).toByteArray(Charsets.UTF_8))
