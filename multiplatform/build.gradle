@@ -1,0 +1,108 @@
+plugins {
+    id("com.android.library")
+    id("org.jetbrains.kotlin.multiplatform")
+    id("maven-publish")
+    id 'org.jetbrains.kotlin.plugin.serialization' version "$versions_kotlin"
+}
+apply plugin: "org.jlleitschuh.gradle.ktlint"
+
+group = "ch.dreipol.dreiattest.multiplatform"
+
+
+kotlin {
+    ios("ios") {
+        binaries {
+            framework()
+        }
+    }
+
+    android("android") {
+        publishAllLibraryVariants()
+    }
+
+    sourceSets["commonMain"].dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions_coroutines")
+        implementation("io.ktor:ktor-client-core:$versions_ktor")
+        implementation("io.ktor:ktor-client-json:$versions_ktor")
+        implementation("io.ktor:ktor-client-logging:$versions_ktor")
+        implementation("io.ktor:ktor-client-serialization:$versions_ktor")
+        implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions_serialization"
+        implementation("co.touchlab:kermit:$versions_kermit")
+        api("com.russhwolf:multiplatform-settings:$versions_mpf_settings")
+        api("com.russhwolf:multiplatform-settings-no-arg:$versions_mpf_settings")
+    }
+
+    sourceSets["commonTest"].dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-test-common")
+        implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
+        implementation "io.ktor:ktor-client-mock:$versions_ktor"
+        implementation("com.russhwolf:multiplatform-settings-test:$versions_mpf_settings")
+    }
+
+    sourceSets["androidMain"].dependencies {
+        implementation "com.google.android.gms:play-services-safetynet:$versions_safety_net"
+        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$versions_play_services_coroutines"
+        implementation("io.ktor:ktor-client-android:$versions_ktor")
+    }
+
+    sourceSets["androidTest"].dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-test-junit")
+    }
+
+    sourceSets["iosMain"].dependencies {
+        implementation("io.ktor:ktor-client-ios:$versions_ktor")
+    }
+}
+
+android {
+    compileSdkVersion 30
+    defaultConfig {
+        minSdkVersion 23
+    }
+    sourceSets {
+        main {
+            manifest.srcFile 'src/androidMain/AndroidManifest.xml'
+        }
+    }
+    buildTypes {
+        //This is for MultiplatformSettings
+        debug {
+            // MPP libraries don't currently get this resolution automatically
+            matchingFallbacks = ['release']
+        }
+        release {
+            minifyEnabled false
+        }
+    }
+}
+
+
+// workaround for https://youtrack.jetbrains.com/issue/KT-27170
+configurations {
+    compileClasspath
+}
+
+ktlint {
+    ignoreFailures.set(false)
+}
+
+tasks["build"].dependsOn("ktlintFormat")
+
+Properties properties = new Properties()
+File localPropertiesFile = new File(rootProject.projectDir.absolutePath + '/local.properties')
+if (localPropertiesFile.exists()) {
+    properties.load(localPropertiesFile.newDataInputStream())
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/dreipol/dreiAttest-android")
+            credentials {
+                username = properties.getProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME") ?: ""
+                password = properties.getProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN") ?: ""
+            }
+        }
+    }
+}

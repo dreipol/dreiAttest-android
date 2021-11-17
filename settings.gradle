@@ -1,0 +1,4 @@
+include ':androidtest'
+include ":android"
+include ":multiplatform"
+rootProject.name='dreiAttest'
