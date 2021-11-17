@@ -1,7 +1,8 @@
 package ch.dreipol.dreiattest.multiplatform.api
 
-import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
-import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
+import ch.dreipol.dreiattest.multiplatform.DreiAttest
+import ch.dreipol.dreiattest.multiplatform.utils.Request
+import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
 import co.touchlab.kermit.CommonLogger
 import co.touchlab.kermit.Kermit
 import io.ktor.client.*
@@ -9,6 +10,7 @@ import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.*
 import io.ktor.client.features.logging.*
 import io.ktor.client.request.*
+import io.ktor.http.*
 import io.ktor.http.content.*
 import kotlinx.serialization.json.Json
 
@@ -38,9 +40,19 @@ internal object NetworkHelper {
     internal const val HEADER_SHARED_SECRET = "$HEADER_PREFIX-Shared-Secret"
     internal const val HEADER_USER_HEADERS = "$HEADER_PREFIX-User-Headers"
 
+    internal const val HEADER_LIBRARY_VERSION = "$HEADER_PREFIX-Library-Version"
+    internal const val HEADER_APP_VERSION = "$HEADER_PREFIX-App-Version"
+    internal const val HEADER_APP_BUILD = "$HEADER_PREFIX-App-Build"
+    internal const val HEADER_APP_IDENTIFIER = "$HEADER_PREFIX-App-Identifier"
+    internal const val HEADER_OS = "$HEADER_PREFIX-OS"
+
     internal val middlewareClient: HttpClient
         get() = middlewareClientCreator()
+
+    internal fun isDreiattestHeader(header: String): Boolean = header.startsWith("Dreiattest-")
 }
+
+internal fun HttpStatusCode.isRedirect(): Boolean = 300 <= value && value < 400
 
 internal fun HttpRequestBuilder.setUid(uid: String) {
     headers.append(NetworkHelper.HEADER_UID, uid)
@@ -50,18 +62,26 @@ internal fun HttpRequestBuilder.setSignature(signature: String) {
     headers.append(NetworkHelper.HEADER_SIGNATURE, signature)
 }
 
-internal fun HttpRequestBuilder.setNonce(nonce: ByteArray) {
-    headers.append(NetworkHelper.HEADER_NONCE, CryptoUtils.encodeToBase64(nonce))
+internal fun HttpRequestBuilder.setNonce(nonce: String) {
+    headers.append(NetworkHelper.HEADER_NONCE, nonce)
 }
 
-internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String?) {
-    sharedSecret?.let { headers.append(NetworkHelper.HEADER_SHARED_SECRET, sharedSecret) }
+internal fun HttpRequestBuilder.setSharedSecret(sharedSecret: String) {
+    headers.append(NetworkHelper.HEADER_SHARED_SECRET, sharedSecret)
 }
 
 internal fun HttpRequestBuilder.setUserHeaders() {
-    val headerKeys = readHeaders().map { it.first }.toMutableList()
+    val headerKeys = signableHeaders().map { it.first }.toMutableList()
     headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
     headers.append(NetworkHelper.HEADER_USER_HEADERS, headerKeys.sortedBy { it }.joinToString(","))
+}
+
+internal fun HttpRequestBuilder.setCommonHeaders(systemInfo: SystemInfo) {
+    headers.append(NetworkHelper.HEADER_LIBRARY_VERSION, DreiAttest.version)
+    headers.append(NetworkHelper.HEADER_APP_VERSION, systemInfo.appVersion)
+    headers.append(NetworkHelper.HEADER_APP_BUILD, systemInfo.appBuild)
+    headers.append(NetworkHelper.HEADER_APP_IDENTIFIER, systemInfo.appIdentifier)
+    headers.append(NetworkHelper.HEADER_OS, systemInfo.osVersion)
 }
 
 internal fun HttpRequestBuilder.readBody(): ByteArray? {
@@ -80,6 +100,15 @@ internal fun HttpRequestBuilder.readHeaders(): List<Pair<String, String>> {
     }
     return headers
 }
+
+private fun Iterable<Pair<String, String>>.signableHeaders(): Collection<Pair<String, String>> =
+    filterNot { it.first.startsWith("Accept") || it.first == "User-Agent" }
+
+internal fun Request.signableHeaders(): Collection<Pair<String, String>> =
+    headers.signableHeaders()
+
+internal  fun HttpRequestBuilder.signableHeaders(): Collection<Pair<String, String>> =
+    readHeaders().signableHeaders()
 
 internal fun HttpRequestBuilder.readMethod(): String {
     return method.value

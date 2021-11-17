@@ -17,8 +17,8 @@ const val TEST_BASE_URL = "https://test.dreipol.ch"
 const val TEST_NONCE = "testnonce"
 const val TEST_REQUEST_ENDPOINT = "https://test.dreipol.ch/test"
 const val TEST_BYPASS_ENDPOINT = "https://bypass.dreipol.ch/"
-const val TEST_NONCE_ENDPOINT = "https://test.dreipol.ch/nonce"
-const val TEST_KEY_ENDPOINT = "https://test.dreipol.ch/key"
+const val TEST_NONCE_ENDPOINT = "https://test.dreipol.ch/dreiattest/nonce"
+const val TEST_KEY_ENDPOINT = "https://test.dreipol.ch/dreiattest/key"
 
 fun mockMiddlewareClient(assertions: suspend (HttpRequestData) -> Unit) {
     middlewareClientCreator = { createMockClient(assertions) }

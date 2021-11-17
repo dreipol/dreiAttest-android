@@ -6,6 +6,7 @@ public expect class Hash
 public expect operator fun Hash.plus(other: ByteArray): Hash
 
 internal expect fun CryptoUtils.hashSHA256(input: ByteArray): Hash
+internal expect fun CryptoUtils.rehashSHA256(input: Hash): Hash
 
 internal expect fun CryptoUtils.generateUuid(): String
 

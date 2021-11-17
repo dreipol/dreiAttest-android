@@ -13,12 +13,16 @@ internal actual fun CryptoUtils.hashSHA256(input: ByteArray): Hash {
     return digest.digest(input)
 }
 
+internal actual fun CryptoUtils.rehashSHA256(input: Hash): Hash {
+    return hashSHA256(input)
+}
+
 internal actual fun CryptoUtils.generateUuid(): String {
     return UUID.randomUUID().toString()
 }
 
 internal actual fun CryptoUtils.encodeToBase64(input: ByteArray): String {
-    return Base64.encodeToString(input, Base64.DEFAULT).trim()
+    return Base64.encodeToString(input, Base64.DEFAULT).replace("\n", "").trim()
 }
 
 internal actual fun CryptoUtils.decodeBase64(input: String): ByteArray {

@@ -1,7 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.Attestation
-import ch.dreipol.dreiattest.multiplatform.mock.AttestationServiceMock
+import ch.dreipol.dreiattest.multiplatform.mock.AttestationProviderMock
 import ch.dreipol.dreiattest.multiplatform.mock.KeystoreMock
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
 import ch.dreipol.dreiattest.multiplatform.util.TEST_KEY_ENDPOINT
@@ -34,8 +34,8 @@ class DreiAttestServiceTest {
     @Test
     fun testUidGeneration() {
         val attestService = DreiAttestService(KeystoreMock, mockSettings)
-        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
-        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser2, deviceAttestationService = AttestationServiceMock()))
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser2, deviceAttestationProvider = AttestationProviderMock()))
 
         val sharedPreferences = SharedPreferences(mockSettings)
         val uid1 = sharedPreferences.getUid(testUser)
@@ -48,7 +48,7 @@ class DreiAttestServiceTest {
         assertEquals(testUser, user1)
         assertEquals(testUser2, user2)
 
-        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
         assertEquals(uid1, sharedPreferences.getUid(testUser))
     }
 
@@ -56,7 +56,7 @@ class DreiAttestServiceTest {
     fun testKeyGeneration() {
         runBlocking {
             val attestService = DreiAttestService(KeystoreMock, mockSettings)
-            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
 
             val headers = listOf("test" to "test")
             val url = "$TEST_BASE_URL/test"
@@ -87,10 +87,10 @@ class DreiAttestServiceTest {
     @Test
     fun testShouldByPass() {
         val attestService = DreiAttestService(KeystoreMock, mockSettings)
-        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
 
-        assertFalse(attestService.shouldByPass("$TEST_BASE_URL/test"))
-        assertTrue(attestService.shouldByPass("https://test2.dreipol.ch/test"))
+        assertTrue(attestService.shouldHandle("$TEST_BASE_URL/test"))
+        assertFalse(attestService.shouldHandle("https://test2.dreipol.ch/test"))
     }
 
     @Test
@@ -100,7 +100,7 @@ class DreiAttestServiceTest {
             val sharedPreferences = SharedPreferences(mockSettings)
             val uid = "testuid"
             sharedPreferences.setUid(testUser, uid)
-            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationService = AttestationServiceMock()))
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
             KeystoreMock.generateNewKeyPair(uid)
 
             assertTrue(KeystoreMock.hasKeyPair(uid))
@@ -144,7 +144,7 @@ class DreiAttestServiceTest {
     }
 
     private fun initWithUsername(attestService: DreiAttestService, userName: String) {
-        attestService.initWith(TEST_BASE_URL, SessionConfiguration(userName, deviceAttestationService = AttestationServiceMock()))
+        attestService.initWith(TEST_BASE_URL, SessionConfiguration(userName, deviceAttestationProvider = AttestationProviderMock()))
     }
 
     private fun getRandomUsername(length: Int, invalidCharacter: Char? = null): String {

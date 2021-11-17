@@ -19,7 +19,7 @@ Pod::Spec.new do |spec|
     spec.pod_target_xcconfig = {
         'KOTLIN_TARGET[sdk=iphonesimulator*]' => 'ios_x64',
         'KOTLIN_TARGET[sdk=iphoneos*]' => 'ios_arm',
-        'KOTLIN_TARGET[sdk=watchsimulator*]' => 'watchos_x86',
+        'KOTLIN_TARGET[sdk=watchsimulator*]' => 'watchos_x64',
         'KOTLIN_TARGET[sdk=watchos*]' => 'watchos_arm',
         'KOTLIN_TARGET[sdk=appletvsimulator*]' => 'tvos_x64',
         'KOTLIN_TARGET[sdk=appletvos*]' => 'tvos_arm64',
@@ -34,7 +34,7 @@ Pod::Spec.new do |spec|
             :script => <<-SCRIPT
                 set -ev
                 REPO_ROOT="$PODS_TARGET_SRCROOT"
-                "$REPO_ROOT/../gradlew" -p "$REPO_ROOT" :multiplatform:syncFramework \
+                "$REPO_ROOT/../../reZHycle/gradlew" -p "$REPO_ROOT" :multiplatform:syncFramework \
                     -Pkotlin.native.cocoapods.target=$KOTLIN_TARGET \
                     -Pkotlin.native.cocoapods.configuration=$CONFIGURATION \
                     -Pkotlin.native.cocoapods.cflags="$OTHER_CFLAGS" \

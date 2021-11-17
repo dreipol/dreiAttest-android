@@ -1,29 +1,47 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
+import kotlinx.coroutines.CompletableDeferred
 import platform.DeviceCheck.DCAppAttestService
 import platform.Foundation.NSData
 import platform.Foundation.NSError
 import platform.Foundation.NSUserDefaults
 import platform.Foundation.base64EncodedStringWithOptions
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
+import kotlin.native.concurrent.freeze
+
+private class KeyGenCompletable {
+    private val completable = CompletableDeferred<Pair<String?, NSError?>>()
+
+    fun receiveKey(keyId: String?, error: NSError?) {
+        completable.complete(Pair(keyId, error))
+    }
+
+    suspend fun await() = completable.await()
+}
+
+private class SignatureCompletable {
+    private val completable = CompletableDeferred<Pair<NSData?, NSError?>>()
+
+    fun receiveSignature(assertion: NSData?, error: NSError?) {
+        completable.complete(Pair(assertion, error))
+    }
+
+    suspend fun await() = completable.await()
+}
 
 public actual class DeviceKeystore : Keystore {
     private val service = DCAppAttestService.sharedService
 
-    init {
-        assert(service.isSupported())
-    }
-
     private fun keyFor(alias: String): String = "dreiAttest.Key.keyId(uid: \"${alias}\")"
 
     override suspend fun generateNewKeyPair(alias: String): ByteArray {
-        val result: Pair<String?, NSError?> = suspendCoroutine { continuation ->
-            service.generateKeyWithCompletionHandler { keyId, error ->
-                continuation.resume(Pair(keyId, error))
-            }
-        }
+        assert(service.isSupported())
 
+        val completable = KeyGenCompletable()
+        val receiver = completable::receiveKey
+        receiver.freeze()
+        service.generateKeyWithCompletionHandler(receiver)
+
+        val result = completable.await()
         result.second?.let {
             throw Exception(it.description())
         }
@@ -43,15 +61,17 @@ public actual class DeviceKeystore : Keystore {
     }
 
     override suspend fun sign(alias: String, content: Hash): String {
+        assert(service.isSupported())
+
         val keyId = NSUserDefaults.standardUserDefaults.stringForKey(keyFor(alias))
             ?: throw IllegalArgumentException()
 
-        val result: Pair<NSData?, NSError?> = suspendCoroutine { continuation ->
-            service.generateAssertion(keyId, content) { assertion, error ->
-                continuation.resume(Pair(assertion, error))
-            }
-        }
+        val completable = SignatureCompletable()
+        val receiver = completable::receiveSignature
+        receiver.freeze()
+        service.generateAssertion(keyId, content, receiver)
 
+        val result = completable.await()
         result.second?.let {
             throw Exception(it.description())
         }

@@ -4,19 +4,21 @@ import ch.dreipol.dreiattest.multiplatform.api.*
 import ch.dreipol.dreiattest.multiplatform.utils.*
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.invoke
+import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+
+public class UnsupportedException: Exception("Attestation is not supported on this device!")
 
 public interface AttestService {
     public val uid: String
+    public val systemInfo: SystemInfo
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
-    public suspend fun buildSignature(request: Request, snonce: ByteArray): String
+    public suspend fun buildSignature(request: Request, snonce: String): String
     public suspend fun deregister()
-    public fun shouldByPass(url: String): Boolean
-    public suspend fun getRequestNonce(): ByteArray
+    public fun shouldHandle(url: String): Boolean
+    public suspend fun getRequestNonce(): String
     public fun getBypassSecret(): String?
 }
 
@@ -29,6 +31,8 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 
     public override val uid: String
         get() = uidBackingField
+    override val systemInfo: SystemInfo
+        get() = sessionConfiguration.deviceAttestationProvider.systemInfo
     private val sharedPreferences = SharedPreferences(settings)
     private var bypassSecret: String? = null
     private lateinit var sessionConfiguration: SessionConfiguration
@@ -38,16 +42,20 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     private val mutex = Mutex()
 
     override fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration) {
+        bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
+        if (bypassSecret == null && !sessionConfiguration.deviceAttestationProvider.isSupported) {
+            throw UnsupportedException()
+        }
+
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
-        bypassSecret = sessionConfiguration.bypassSecret ?: SystemUtils.getEnvVariable(BYPASS_SECRET_ENV)
-        this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest")
+        this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest", sessionConfiguration.deviceAttestationProvider.systemInfo)
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
 
-    override fun shouldByPass(url: String): Boolean {
-        return url.contains(baseAddress).not()
+    override fun shouldHandle(url: String): Boolean {
+        return url.contains(baseAddress)
     }
 
     override fun getBypassSecret(): String? {
@@ -56,15 +64,22 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 
     override suspend fun buildSignature(
         request: Request,
-        snonce: ByteArray,
+        snonce: String,
     ): String {
-        mutex.withLock {
-            if (keystore.hasKeyPair(uid).not()) {
-                val signatureNonce = CryptoUtils.decodeBase64(middlewareAPI.getNonce(uid))
-                val publicKey = keystore.generateNewKeyPair(uid)
-                val nonce = CryptoUtils.hashSHA256(uid.toByteArray() + publicKey + signatureNonce)
-                val attestation = sessionConfiguration.deviceAttestationService.getAttestation(nonce, publicKey)
-                middlewareAPI.setKey(attestation, uid, signatureNonce)
+        if (keystore.hasKeyPair(uid).not()) {
+            mutex.withLock {
+                if (keystore.hasKeyPair(uid)) { return@withLock }
+
+                val signatureNonce = middlewareAPI.getNonce(uid).trim('"')
+                val publicKey = CryptoUtils.encodeToBase64(keystore.generateNewKeyPair(uid))
+                val nonce = CryptoUtils.hashSHA256((uid + publicKey + signatureNonce).toByteArray(Charsets.UTF_8))
+                val attestation = sessionConfiguration.deviceAttestationProvider.getAttestation(nonce, publicKey)
+                try {
+                    middlewareAPI.setKey(attestation, uid, signatureNonce)
+                } catch (t: Throwable) {
+                    keystore.deleteKeyPair(uid)
+                    throw t
+                }
             }
         }
         return signRequest(request, snonce)
@@ -88,18 +103,20 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         }
     }
 
-    override suspend fun getRequestNonce(): ByteArray {
+    override suspend fun getRequestNonce(): String {
         // TODO check level and request nonce from middleware if configured
-        return "00000000-0000-0000-0000-000000000000".toByteArray()
+        return "00000000-0000-0000-0000-000000000000"
     }
 
-    private suspend fun signRequest(request: Request, snonce: ByteArray): String {
-        val sortedHeaders = request.headers.sortedBy { it.first }
-        val headerJson = Json.encodeToString(sortedHeaders).toByteArray()
+    private suspend fun signRequest(request: Request, snonce: String): String {
+        val headerJson = JsonUtil.sortedJsonData(request.signableHeaders().toMap())
+
         val urlWithoutProtocol = request.url.removeProtocolFromUrl()
         val requestHash = CryptoUtils.hashSHA256(
-            urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0)))
-        return keystore.sign(uid, requestHash + snonce)
+            urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0))
+        )
+        val nonce = CryptoUtils.rehashSHA256(requestHash + snonce.toByteArray(Charsets.UTF_8))
+        return keystore.sign(uid, nonce)
     }
 
     private fun generateUid(user: String): String {
@@ -117,9 +134,9 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
 }
 
 public data class SessionConfiguration(
-    val user: String,
+    val user: String = "",
     val level: Level = Level.SIGN_ONLY,
-    val deviceAttestationService: AttestationService,
+    val deviceAttestationProvider: AttestationProvider,
     val bypassSecret: String? = null,
 )
 
@@ -127,8 +144,8 @@ public enum class Level {
     SIGN_ONLY,
 }
 
-public interface AttestationService {
-    public suspend fun getAttestation(nonce: Hash, publicKey: ByteArray): Attestation
+public interface AttestationProvider {
+    public val systemInfo: SystemInfo
+    public val isSupported: Boolean
+    public suspend fun getAttestation(nonce: Hash, publicKey: String): Attestation
 }
-
-public expect class DeviceAttestationService : AttestationService
