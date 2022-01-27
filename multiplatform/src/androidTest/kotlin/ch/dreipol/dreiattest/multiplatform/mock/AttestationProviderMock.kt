@@ -12,6 +12,8 @@ import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
 actual class AttestationProviderMock : AttestationProvider {
 
     override val systemInfo: SystemInfo = SystemInfoMock
+    override val isSupported: Boolean
+        get() = true
 
     override suspend fun getAttestation(nonce: Hash, publicKey: String): Attestation {
         return Attestation(

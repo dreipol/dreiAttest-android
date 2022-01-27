@@ -22,9 +22,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
 
+
+const val LIBRARY_VERSION = "kotlin-1.0.3"
+
 class DreiAttestFeatureTest {
 
-    @KtorExperimentalAPI
     @Test
     fun testSingedRequest() {
         runBlocking {
@@ -134,7 +136,7 @@ class DreiAttestFeatureTest {
     }
 
     private fun addSystemInfoHeaders(headers: MutableList<Pair<String, String>>) {
-        headers.add(NetworkHelper.HEADER_LIBRARY_VERSION to "kotlin-1.0.1")
+        headers.add(NetworkHelper.HEADER_LIBRARY_VERSION to LIBRARY_VERSION)
         headers.add(NetworkHelper.HEADER_APP_VERSION to SystemInfoMock.appVersion)
         headers.add(NetworkHelper.HEADER_APP_BUILD to SystemInfoMock.appBuild)
         headers.add(NetworkHelper.HEADER_APP_IDENTIFIER to SystemInfoMock.appIdentifier)
