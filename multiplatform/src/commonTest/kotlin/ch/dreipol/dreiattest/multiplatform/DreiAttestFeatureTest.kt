@@ -1,6 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.NetworkHelper
+import ch.dreipol.dreiattest.multiplatform.api.signableHeaders
 import ch.dreipol.dreiattest.multiplatform.mock.AttestServiceMock
 import ch.dreipol.dreiattest.multiplatform.mock.AttestationProviderMock
 import ch.dreipol.dreiattest.multiplatform.mock.SystemInfoMock
@@ -146,7 +147,7 @@ class DreiAttestFeatureTest {
     private fun addDreiattestHeaders(headers: MutableList<Pair<String, String>>) {
         addSystemInfoHeaders(headers)
         headers.add(NetworkHelper.HEADER_UID to "test")
-        val headerKeys = headers.map { it.first }.toMutableList()
+        val headerKeys = headers.signableHeaders().map { it.first }.toMutableList()
         headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
         headers.add(NetworkHelper.HEADER_USER_HEADERS to headerKeys.sortedBy { it }.joinToString(","))
         headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")
