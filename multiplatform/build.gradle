@@ -33,8 +33,7 @@ kotlin {
     }
 
     sourceSets["commonTest"].dependencies {
-        implementation("org.jetbrains.kotlin:kotlin-test-common")
-        implementation("org.jetbrains.kotlin:kotlin-test-annotations-common")
+        implementation(kotlin("test"))
         implementation "io.ktor:ktor-client-mock:$versions_ktor"
         implementation("com.russhwolf:multiplatform-settings-test:$versions_mpf_settings")
     }
@@ -55,7 +54,7 @@ kotlin {
 }
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         minSdkVersion 23
     }

@@ -101,7 +101,7 @@ internal fun HttpRequestBuilder.readHeaders(): List<Pair<String, String>> {
     return headers
 }
 
-private fun Iterable<Pair<String, String>>.signableHeaders(): Collection<Pair<String, String>> =
+internal fun Iterable<Pair<String, String>>.signableHeaders(): Collection<Pair<String, String>> =
     filterNot { it.first.startsWith("Accept") || it.first == "User-Agent" }
 
 internal fun Request.signableHeaders(): Collection<Pair<String, String>> =

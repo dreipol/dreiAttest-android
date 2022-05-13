@@ -1,6 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform
 
 import ch.dreipol.dreiattest.multiplatform.api.NetworkHelper
+import ch.dreipol.dreiattest.multiplatform.api.signableHeaders
 import ch.dreipol.dreiattest.multiplatform.mock.AttestServiceMock
 import ch.dreipol.dreiattest.multiplatform.mock.AttestationProviderMock
 import ch.dreipol.dreiattest.multiplatform.mock.SystemInfoMock
@@ -22,9 +23,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
 
+
+const val LIBRARY_VERSION = "kotlin-1.0.3"
+
 class DreiAttestFeatureTest {
 
-    @KtorExperimentalAPI
     @Test
     fun testSingedRequest() {
         runBlocking {
@@ -134,7 +137,7 @@ class DreiAttestFeatureTest {
     }
 
     private fun addSystemInfoHeaders(headers: MutableList<Pair<String, String>>) {
-        headers.add(NetworkHelper.HEADER_LIBRARY_VERSION to "kotlin-1.0.1")
+        headers.add(NetworkHelper.HEADER_LIBRARY_VERSION to LIBRARY_VERSION)
         headers.add(NetworkHelper.HEADER_APP_VERSION to SystemInfoMock.appVersion)
         headers.add(NetworkHelper.HEADER_APP_BUILD to SystemInfoMock.appBuild)
         headers.add(NetworkHelper.HEADER_APP_IDENTIFIER to SystemInfoMock.appIdentifier)
@@ -144,7 +147,7 @@ class DreiAttestFeatureTest {
     private fun addDreiattestHeaders(headers: MutableList<Pair<String, String>>) {
         addSystemInfoHeaders(headers)
         headers.add(NetworkHelper.HEADER_UID to "test")
-        val headerKeys = headers.map { it.first }.toMutableList()
+        val headerKeys = headers.signableHeaders().map { it.first }.toMutableList()
         headerKeys.add(NetworkHelper.HEADER_USER_HEADERS)
         headers.add(NetworkHelper.HEADER_USER_HEADERS to headerKeys.sortedBy { it }.joinToString(","))
         headers.add(NetworkHelper.HEADER_SIGNATURE to "signature")

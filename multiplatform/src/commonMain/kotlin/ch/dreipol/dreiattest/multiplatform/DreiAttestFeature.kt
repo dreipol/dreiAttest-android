@@ -15,7 +15,7 @@ public class InvalidHeaderException: Exception("Requests should not already cont
  */
 public class DreiAttestFeature(private val attestService: AttestService) {
 
-    public companion object : HttpClientFeature<Config, DreiAttestFeature> {
+        public companion object : HttpClientFeature<Config, DreiAttestFeature> {
         override val key: AttributeKey<DreiAttestFeature> = AttributeKey("DreiAttestFeature")
 
         override fun prepare(block: Config.() -> Unit): DreiAttestFeature {

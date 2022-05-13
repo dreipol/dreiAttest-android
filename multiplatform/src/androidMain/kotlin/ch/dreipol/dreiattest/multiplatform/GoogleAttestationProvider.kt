@@ -18,7 +18,7 @@ public class GoogleAttestationProvider(private val context: Context, private val
         GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context) == ConnectionResult.SUCCESS
 
     public override suspend fun getAttestation(nonce: Hash, publicKey: String): Attestation {
-        val deviceAttestation = SafetyNet.getClient(context).attest(nonce, apiKey).await().jwsResult
+        val deviceAttestation = SafetyNet.getClient(context).attest(nonce, apiKey).await().jwsResult!!
         return Attestation(publicKey = publicKey, attestation = deviceAttestation, driver = platformDriver)
     }
 }
