@@ -1,7 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.mock
 
 import ch.dreipol.dreiattest.multiplatform.AttestationProvider
-import ch.dreipol.dreiattest.multiplatform.api.Attestation
+import ch.dreipol.dreiattest.multiplatform.api.dto.Attestation
 import ch.dreipol.dreiattest.multiplatform.platformDriver
 import ch.dreipol.dreiattest.multiplatform.utils.*
 import io.ktor.utils.io.core.*

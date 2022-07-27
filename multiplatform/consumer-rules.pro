@@ -1,0 +1,1 @@
+-keep class ch.dreipol.dreiattest.multiplatform.api.dto.** { *; }

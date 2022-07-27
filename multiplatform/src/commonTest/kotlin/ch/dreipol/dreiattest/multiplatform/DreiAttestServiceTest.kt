@@ -1,6 +1,6 @@
 package ch.dreipol.dreiattest.multiplatform
 
-import ch.dreipol.dreiattest.multiplatform.api.Attestation
+import ch.dreipol.dreiattest.multiplatform.api.dto.Attestation
 import ch.dreipol.dreiattest.multiplatform.mock.AttestationProviderMock
 import ch.dreipol.dreiattest.multiplatform.mock.KeystoreMock
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL

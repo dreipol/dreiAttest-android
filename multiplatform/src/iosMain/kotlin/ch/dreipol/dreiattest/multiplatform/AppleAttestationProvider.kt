@@ -1,6 +1,6 @@
 package ch.dreipol.dreiattest.multiplatform
 
-import ch.dreipol.dreiattest.multiplatform.api.Attestation
+import ch.dreipol.dreiattest.multiplatform.api.dto.Attestation
 import ch.dreipol.dreiattest.multiplatform.utils.DeviceSystemInfo
 import ch.dreipol.dreiattest.multiplatform.utils.Hash
 import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
