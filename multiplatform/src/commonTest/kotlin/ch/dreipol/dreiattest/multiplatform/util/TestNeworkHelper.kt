@@ -1,7 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.util
 
 import ch.dreipol.dreiattest.multiplatform.AttestService
-import ch.dreipol.dreiattest.multiplatform.DreiAttestFeature
+import ch.dreipol.dreiattest.multiplatform.DreiAttestPlugin
 import ch.dreipol.dreiattest.multiplatform.api.middlewareClientCreator
 import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
 import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
@@ -33,7 +33,7 @@ fun requestClientMock(attestService: AttestService, assertions: suspend (HttpReq
                 }
             )
         }
-        install(DreiAttestFeature) {
+        install(DreiAttestPlugin) {
             this.attestService = attestService
         }
         engine {

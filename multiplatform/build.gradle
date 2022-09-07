@@ -23,10 +23,10 @@ kotlin {
     sourceSets["commonMain"].dependencies {
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions_coroutines")
         implementation("io.ktor:ktor-client-core:$versions_ktor")
-        implementation("io.ktor:ktor-client-json:$versions_ktor")
+        implementation("io.ktor:ktor-client-content-negotiation:$versions_ktor")
+        implementation("io.ktor:ktor-serialization-kotlinx-json:$versions_ktor")
         implementation("io.ktor:ktor-client-logging:$versions_ktor")
         implementation("io.ktor:ktor-client-serialization:$versions_ktor")
-        implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions_serialization"
         implementation("co.touchlab:kermit:$versions_kermit")
         api("com.russhwolf:multiplatform-settings:$versions_mpf_settings")
         api("com.russhwolf:multiplatform-settings-no-arg:$versions_mpf_settings")
@@ -49,7 +49,7 @@ kotlin {
     }
 
     sourceSets["iosMain"].dependencies {
-        implementation("io.ktor:ktor-client-ios:$versions_ktor")
+        implementation("io.ktor:ktor-client-darwin:$versions_ktor")
     }
 }
 

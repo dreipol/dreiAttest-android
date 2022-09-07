@@ -2,7 +2,8 @@ package ch.dreipol.dreiattest.multiplatform.api
 
 import ch.dreipol.dreiattest.multiplatform.api.dto.Attestation
 import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
-import io.ktor.client.features.json.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.json.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -13,7 +14,7 @@ internal class MiddlewareAPI(private val middlewareUrl: String, private val syst
             url.setBase(middlewareUrl)
             setCommonHeaders(systemInfo)
             setUid(uid)
-        }
+        }.body()
     }
 
     suspend fun setKey(attestation: Attestation, uid: String, nonce: String) {
@@ -23,20 +24,20 @@ internal class MiddlewareAPI(private val middlewareUrl: String, private val syst
             setCommonHeaders(systemInfo)
             setUid(uid)
             setNonce(nonce)
-            body = defaultSerializer().write(attestation)
-        }
+            setBody(defaultSerializer().write(attestation))
+        }.body()
     }
 
     suspend fun deleteKey(uid: String, publicKey: String, nonce: String, setSignature: suspend (HttpRequestBuilder) -> Unit) {
         return NetworkHelper.middlewareClient.delete("key") {
             url.setBase(middlewareUrl)
-            body = TextContent(publicKey, ContentType.Text.Plain)
+            setBody(TextContent(publicKey, ContentType.Text.Plain))
             setCommonHeaders(systemInfo)
             setUid(uid)
             setUserHeaders()
             setSignature(this)
             setNonce(nonce)
-        }
+        }.body()
     }
 }
 

@@ -9,8 +9,6 @@ import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BYPASS_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.TEST_REQUEST_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.requestClientMock
-import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
-import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
 import io.ktor.client.engine.mock.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
@@ -22,7 +20,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
-
 
 const val LIBRARY_VERSION = "kotlin-1.0.3"
 

@@ -6,18 +6,18 @@ import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
 import co.touchlab.kermit.CommonLogger
 import co.touchlab.kermit.Kermit
 import io.ktor.client.*
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 internal var middlewareClientCreator = {
     HttpClient {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(
+        install(ContentNegotiation) {
+            json(
                 Json {
                     ignoreUnknownKeys = true
                 }
@@ -107,7 +107,7 @@ internal fun Iterable<Pair<String, String>>.signableHeaders(): Collection<Pair<S
 internal fun Request.signableHeaders(): Collection<Pair<String, String>> =
     headers.signableHeaders()
 
-internal  fun HttpRequestBuilder.signableHeaders(): Collection<Pair<String, String>> =
+internal fun HttpRequestBuilder.signableHeaders(): Collection<Pair<String, String>> =
     readHeaders().signableHeaders()
 
 internal fun HttpRequestBuilder.readMethod(): String {

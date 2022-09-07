@@ -43,8 +43,8 @@ dependencies {
     implementation("io.ktor:ktor-client-core:$versions_ktor")
     implementation("io.ktor:ktor-client-json:$versions_ktor")
     implementation("io.ktor:ktor-client-logging:$versions_ktor")
-    implementation("io.ktor:ktor-client-serialization:$versions_ktor")
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$versions_serialization"
+    implementation("io.ktor:ktor-client-content-negotiation:$versions_ktor")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:$versions_ktor")
     implementation("co.touchlab:kermit:$versions_kermit")
     implementation("com.russhwolf:multiplatform-settings-test:$versions_mpf_settings")
 

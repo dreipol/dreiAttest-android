@@ -9,7 +9,7 @@ import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-public class UnsupportedException: Exception("Attestation is not supported on this device!")
+public class UnsupportedException : Exception("Attestation is not supported on this device!")
 
 public interface AttestService {
     public val uid: String

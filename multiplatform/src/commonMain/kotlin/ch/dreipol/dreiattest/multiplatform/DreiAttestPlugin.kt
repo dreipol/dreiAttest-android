@@ -4,28 +4,28 @@ import ch.dreipol.dreiattest.multiplatform.api.*
 import ch.dreipol.dreiattest.multiplatform.utils.Request
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.features.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.util.*
 
-public class InvalidHeaderException: Exception("Requests should not already contain \"Dreiattest-\" headers!")
+public class InvalidHeaderException : Exception("Requests should not already contain \"Dreiattest-\" headers!")
 
 /**
  * install this feature in your client to sign your requests
  */
-public class DreiAttestFeature(private val attestService: AttestService) {
+public class DreiAttestPlugin(private val attestService: AttestService) {
 
-        public companion object : HttpClientFeature<Config, DreiAttestFeature> {
-        override val key: AttributeKey<DreiAttestFeature> = AttributeKey("DreiAttestFeature")
+    public companion object : HttpClientPlugin<Config, DreiAttestPlugin> {
+        override val key: AttributeKey<DreiAttestPlugin> = AttributeKey("DreiAttestFeature")
 
-        override fun prepare(block: Config.() -> Unit): DreiAttestFeature {
+        override fun prepare(block: Config.() -> Unit): DreiAttestPlugin {
             val config = Config().apply(block)
-            return DreiAttestFeature(config.attestService)
+            return DreiAttestPlugin(config.attestService)
         }
 
-        override fun install(feature: DreiAttestFeature, scope: HttpClient) {
+        override fun install(plugin: DreiAttestPlugin, scope: HttpClient) {
             scope.sendPipeline.intercept(HttpSendPipeline.State) {
-                feature.addHeaders(context)
+                plugin.addHeaders(context)
             }
             scope.sendPipeline.intercept(HttpSendPipeline.Receive) {
                 if ((subject as? HttpClientCall)?.response?.status?.isRedirect() == true) {

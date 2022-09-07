@@ -1,22 +1,22 @@
 package ch.dreipol.dreiattest.androidtest
 
 import ch.dreipol.dreiattest.multiplatform.AttestService
-import ch.dreipol.dreiattest.multiplatform.DreiAttestFeature
+import ch.dreipol.dreiattest.multiplatform.DreiAttestPlugin
 import co.touchlab.kermit.CommonLogger
 import co.touchlab.kermit.Kermit
 import io.ktor.client.*
-import io.ktor.client.features.json.*
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.*
 
 class DemoAPI(private val attestService: AttestService, private val baseUrl: String) {
 
     private val client = HttpClient {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(
+        install(ContentNegotiation) {
+            json(
                 kotlinx.serialization.json.Json {
                     ignoreUnknownKeys = true
                 }
@@ -26,7 +26,7 @@ class DemoAPI(private val attestService: AttestService, private val baseUrl: Str
             logger = HttpLogger()
             level = LogLevel.ALL
         }
-        install(DreiAttestFeature) {
+        install(DreiAttestPlugin) {
             attestService = this@DemoAPI.attestService
         }
     }
@@ -48,7 +48,6 @@ internal class HttpLogger : Logger {
 internal fun kermit(): Kermit {
     return Kermit(CommonLogger())
 }
-
 
 
 private fun URLBuilder.setBase(base: String): URLBuilder {
