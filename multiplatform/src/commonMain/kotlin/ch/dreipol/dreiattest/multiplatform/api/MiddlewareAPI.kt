@@ -7,29 +7,29 @@ import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 
-internal class MiddlewareAPI(private val middlewareUrl: String, private val systemInfo: SystemInfo) {
+internal class MiddlewareAPI(private val middlewareUrl: URLBuilder, private val systemInfo: SystemInfo) {
+
+    private fun urlFor(path: String): Url = URLBuilder(middlewareUrl).appendPathSegments(path).build()
+
     suspend fun getNonce(uid: String): String {
-        return NetworkHelper.middlewareClient.get("nonce") {
-            url.setBase(middlewareUrl)
+        return NetworkHelper.middlewareClient.get(urlFor("nonce")) {
             setCommonHeaders(systemInfo)
             setUid(uid)
         }.body()
     }
 
     suspend fun setKey(attestation: Attestation, uid: String, nonce: String) {
-        return NetworkHelper.middlewareClient.post("key") {
-            contentType(ContentType.Application.Json)
-            url.setBase(middlewareUrl)
+        return NetworkHelper.middlewareClient.post(urlFor("key")) {
             setCommonHeaders(systemInfo)
             setUid(uid)
             setNonce(nonce)
+            contentType(ContentType.Application.Json)
             setBody(attestation)
         }.body()
     }
 
     suspend fun deleteKey(uid: String, publicKey: String, nonce: String, setSignature: suspend (HttpRequestBuilder) -> Unit) {
-        return NetworkHelper.middlewareClient.delete("key") {
-            url.setBase(middlewareUrl)
+        return NetworkHelper.middlewareClient.delete(urlFor("key")) {
             setBody(TextContent(publicKey, ContentType.Text.Plain))
             setCommonHeaders(systemInfo)
             setUid(uid)
@@ -37,12 +37,5 @@ internal class MiddlewareAPI(private val middlewareUrl: String, private val syst
             setSignature(this)
             setNonce(nonce)
         }.body()
-    }
-}
-
-private fun URLBuilder.setBase(base: String): URLBuilder {
-    val path = encodedPath
-    return takeFrom(base).apply {
-        encodedPath += path
     }
 }

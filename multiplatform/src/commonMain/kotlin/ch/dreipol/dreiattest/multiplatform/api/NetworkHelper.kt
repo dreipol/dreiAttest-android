@@ -53,7 +53,7 @@ internal object NetworkHelper {
     internal fun isDreiattestHeader(header: String): Boolean = header.startsWith("Dreiattest-")
 }
 
-internal fun HttpStatusCode.isRedirect(): Boolean = 300 <= value && value < 400
+internal fun HttpStatusCode.isRedirect(): Boolean = value in 300..399
 
 internal fun HttpRequestBuilder.setUid(uid: String) {
     headers.append(NetworkHelper.HEADER_UID, uid)

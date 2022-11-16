@@ -10,7 +10,7 @@ import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
 import ch.dreipol.dreiattest.multiplatform.utils.Request
 import ch.dreipol.dreiattest.multiplatform.utils.SharedPreferences
 import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
-import com.russhwolf.settings.MockSettings
+import com.russhwolf.settings.MapSettings
 import com.russhwolf.settings.Settings
 import io.ktor.http.content.*
 import io.ktor.utils.io.core.*
@@ -28,7 +28,7 @@ class DreiAttestServiceTest {
     @BeforeTest
     fun prepare() {
         KeystoreMock.keys.clear()
-        mockSettings = MockSettings.Factory().create()
+        mockSettings = MapSettings.Factory().create()
     }
 
     @Test
@@ -96,11 +96,10 @@ class DreiAttestServiceTest {
     @Test
     fun testDeregister() {
         runBlocking {
-            val attestService = DreiAttestService(KeystoreMock, mockSettings)
             val sharedPreferences = SharedPreferences(mockSettings)
             val uid = "testuid"
             sharedPreferences.setUid(testUser, uid)
-            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
+
             KeystoreMock.generateNewKeyPair(uid)
 
             assertTrue(KeystoreMock.hasKeyPair(uid))
@@ -111,6 +110,9 @@ class DreiAttestServiceTest {
                 assertTrue(body is OutgoingContent.ByteArrayContent)
                 assertEquals(CryptoUtils.encodeToBase64(publicKey), body.bytes().decodeToString())
             }
+
+            val attestService = DreiAttestService(KeystoreMock, mockSettings)
+            attestService.initWith(TEST_BASE_URL, SessionConfiguration(testUser, deviceAttestationProvider = AttestationProviderMock()))
             attestService.deregister()
             assertFalse(KeystoreMock.hasKeyPair(uid))
             // assertEquals(1, it.requests.size)

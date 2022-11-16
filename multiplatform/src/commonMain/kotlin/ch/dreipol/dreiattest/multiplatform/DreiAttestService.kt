@@ -4,6 +4,7 @@ import ch.dreipol.dreiattest.multiplatform.api.*
 import ch.dreipol.dreiattest.multiplatform.api.dto.Attestation
 import ch.dreipol.dreiattest.multiplatform.utils.*
 import com.russhwolf.settings.Settings
+import io.ktor.http.*
 import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
@@ -46,10 +47,10 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         if (bypassSecret == null && !sessionConfiguration.deviceAttestationProvider.isSupported) {
             throw UnsupportedException()
         }
-
+        val urlBuilder = URLBuilder(baseAddress).appendPathSegments("dreiattest/")
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
-        this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest", sessionConfiguration.deviceAttestationProvider.systemInfo)
+        this.middlewareAPI = MiddlewareAPI(urlBuilder, sessionConfiguration.deviceAttestationProvider.systemInfo)
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }

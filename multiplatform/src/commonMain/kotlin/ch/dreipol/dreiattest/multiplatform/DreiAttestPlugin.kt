@@ -11,7 +11,7 @@ import io.ktor.util.*
 public class InvalidHeaderException : Exception("Requests should not already contain \"Dreiattest-\" headers!")
 
 /**
- * install this feature in your client to sign your requests
+ * install this plugin in your client to sign your requests
  */
 public class DreiAttestPlugin(private val attestService: AttestService) {
 
