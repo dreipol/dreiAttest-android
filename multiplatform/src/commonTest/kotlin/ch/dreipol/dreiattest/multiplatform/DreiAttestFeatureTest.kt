@@ -20,7 +20,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
 
-const val LIBRARY_VERSION = "kotlin-1.0.3"
+const val LIBRARY_VERSION = "kotlin-1.1"
 
 class DreiAttestFeatureTest {
 
