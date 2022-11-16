@@ -3,11 +3,12 @@ package ch.dreipol.dreiattest.multiplatform.api
 import ch.dreipol.dreiattest.multiplatform.DreiAttest
 import ch.dreipol.dreiattest.multiplatform.utils.Request
 import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
-import co.touchlab.kermit.CommonLogger
-import co.touchlab.kermit.Kermit
+import co.touchlab.kermit.Logger
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.client.plugins.logging.*
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger as KtorLogger
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -118,12 +119,8 @@ internal fun HttpRequestBuilder.readUrl(): String {
     return url.buildString()
 }
 
-internal class HttpLogger : Logger {
+internal class HttpLogger : KtorLogger {
     override fun log(message: String) {
-        kermit().d { message }
+        Logger.d { message }
     }
-}
-
-internal fun kermit(): Kermit {
-    return Kermit(CommonLogger())
 }
