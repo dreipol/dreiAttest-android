@@ -16,6 +16,12 @@ kotlin {
         }
     }
 
+    iosSimulatorArm64("iosSimulatorArm64") {
+        binaries {
+            framework()
+        }
+    }
+
     android("android") {
         publishAllLibraryVariants()
     }
@@ -50,6 +56,8 @@ kotlin {
     sourceSets["iosMain"].dependencies {
         implementation("io.ktor:ktor-client-darwin:$versions_ktor")
     }
+
+    sourceSets["iosSimulatorArm64Main"].dependsOn(sourceSets["iosMain"])
 }
 
 android {
