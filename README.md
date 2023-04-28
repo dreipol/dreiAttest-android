@@ -44,7 +44,8 @@ implementation("ch.dreipol.dreiattest.multiplatform:multiplatform-android:<versi
 The library uses the `AttestationProvider` - interface to wrap the actual google or apple device attestation services.
 
 #### Android
-For android dreiattest is using SafetyNet for your device attestation. To use this service you need to create an api key, which is described [here](https://developer.android.com/training/safetynet/attestation#obtain-api-key).
+For android dreiattest is using Play Integrity API for your device attestation. 
+To use this service you need to activate Integrity API as described [here](https://developer.android.com/google/play/integrity/setup).
 
 ### `DreiAttestService`
 To use the `DreiAttestService` create a new instance and call the `initWith` - function, as follows:
