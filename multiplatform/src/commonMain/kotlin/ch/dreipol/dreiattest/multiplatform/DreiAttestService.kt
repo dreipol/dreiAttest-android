@@ -73,8 +73,8 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
                 val signatureNonce = middlewareAPI.getNonce(uid).trim('"')
                 val publicKey = CryptoUtils.encodeToBase64(keystore.generateNewKeyPair(uid))
                 val nonce = CryptoUtils.hashSHA256((uid + publicKey + signatureNonce).toByteArray(Charsets.UTF_8))
-                val attestation = sessionConfiguration.deviceAttestationProvider.getAttestation(nonce, publicKey)
                 try {
+                    val attestation = sessionConfiguration.deviceAttestationProvider.getAttestation(nonce, publicKey)
                     middlewareAPI.setKey(attestation, uid, signatureNonce)
                 } catch (t: Throwable) {
                     keystore.deleteKeyPair(uid)
