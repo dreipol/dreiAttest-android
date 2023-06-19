@@ -9,22 +9,18 @@ import ch.dreipol.dreiattest.multiplatform.util.TEST_BASE_URL
 import ch.dreipol.dreiattest.multiplatform.util.TEST_BYPASS_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.TEST_REQUEST_ENDPOINT
 import ch.dreipol.dreiattest.multiplatform.util.requestClientMock
-import ch.dreipol.dreiattest.multiplatform.utils.CryptoUtils
-import ch.dreipol.dreiattest.multiplatform.utils.encodeToBase64
+import io.ktor.client.call.*
 import io.ktor.client.engine.mock.*
-import io.ktor.client.features.json.*
 import io.ktor.client.request.*
 import io.ktor.client.utils.*
 import io.ktor.http.*
 import io.ktor.util.*
-import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.test.*
 
-
-const val LIBRARY_VERSION = "kotlin-1.0.3"
+const val LIBRARY_VERSION = "kotlin-1.1"
 
 class DreiAttestFeatureTest {
 
@@ -46,16 +42,16 @@ class DreiAttestFeatureTest {
                 assertEquals(expectedHeaders, it.headers.flattenEntries())
                 assertNotNull(it.body)
                 val jsonBody = it.body.toByteArray().decodeToString()
-                val jsonBodyExpected = Json.encodeToString(body)
-                assertEquals(jsonBodyExpected, jsonBody)
+                assertEquals(body, jsonBody)
             }
-            client.get<String> {
+            val response: String = client.get {
+                contentType(ContentType.Application.Json)
                 url {
                     takeFrom(TEST_REQUEST_ENDPOINT)
                 }
                 addHeaders(headers)
-                this.body = defaultSerializer().write(body)
-            }
+                setBody(body)
+            }.body()
         }
     }
 
@@ -76,12 +72,12 @@ class DreiAttestFeatureTest {
                 assertEquals(expectedHeaders, it.headers.flattenEntries())
                 assertTrue(it.body is EmptyContent)
             }
-            client.get<String> {
+            val response: String = client.get {
                 url {
                     takeFrom(TEST_REQUEST_ENDPOINT)
                 }
                 addHeaders(headers)
-            }
+            }.body()
         }
     }
 
@@ -95,16 +91,15 @@ class DreiAttestFeatureTest {
                 assertNull(it.headers[NetworkHelper.HEADER_UID])
             }
             val headers = mutableListOf("test" to "test")
-            client.get<String> {
+            val response: String = client.get {
                 url {
                     takeFrom(TEST_BYPASS_ENDPOINT)
                 }
                 addHeaders(headers)
-            }
+            }.body()
         }
     }
 
-    @KtorExperimentalAPI
     @Test
     fun testSharedSecret() {
         runBlocking {
@@ -122,12 +117,12 @@ class DreiAttestFeatureTest {
                 addSharedSecretHeader(expectedHeaders, sharedSecret)
                 assertEquals(expectedHeaders, it.headers.flattenEntries())
             }
-            client.get<String> {
+            val response: String = client.get {
                 url {
                     takeFrom(TEST_REQUEST_ENDPOINT)
                 }
                 addHeaders(headers)
-            }
+            }.body()
         }
     }
 

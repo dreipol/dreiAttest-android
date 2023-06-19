@@ -4,12 +4,13 @@ import ch.dreipol.dreiattest.multiplatform.api.*
 import ch.dreipol.dreiattest.multiplatform.api.dto.Attestation
 import ch.dreipol.dreiattest.multiplatform.utils.*
 import com.russhwolf.settings.Settings
+import io.ktor.http.*
 import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-public class UnsupportedException: Exception("Attestation is not supported on this device!")
+public class UnsupportedException : Exception("Attestation is not supported on this device!")
 
 public interface AttestService {
     public val uid: String
@@ -46,10 +47,10 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
         if (bypassSecret == null && !sessionConfiguration.deviceAttestationProvider.isSupported) {
             throw UnsupportedException()
         }
-
+        val urlBuilder = URLBuilder(baseAddress).appendPathSegments("dreiattest/")
         validateUsername(sessionConfiguration.user)
         this.sessionConfiguration = sessionConfiguration
-        this.middlewareAPI = MiddlewareAPI(baseAddress + "/dreiattest", sessionConfiguration.deviceAttestationProvider.systemInfo)
+        this.middlewareAPI = MiddlewareAPI(urlBuilder, sessionConfiguration.deviceAttestationProvider.systemInfo)
         this.baseAddress = baseAddress
         uidBackingField = sharedPreferences.getUid(sessionConfiguration.user) ?: generateUid(sessionConfiguration.user)
     }
@@ -73,8 +74,8 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
                 val signatureNonce = middlewareAPI.getNonce(uid).trim('"')
                 val publicKey = CryptoUtils.encodeToBase64(keystore.generateNewKeyPair(uid))
                 val nonce = CryptoUtils.hashSHA256((uid + publicKey + signatureNonce).toByteArray(Charsets.UTF_8))
-                val attestation = sessionConfiguration.deviceAttestationProvider.getAttestation(nonce, publicKey)
                 try {
+                    val attestation = sessionConfiguration.deviceAttestationProvider.getAttestation(nonce, publicKey)
                     middlewareAPI.setKey(attestation, uid, signatureNonce)
                 } catch (t: Throwable) {
                     keystore.deleteKeyPair(uid)

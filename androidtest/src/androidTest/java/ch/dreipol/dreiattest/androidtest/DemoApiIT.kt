@@ -2,11 +2,10 @@ package ch.dreipol.dreiattest.androidtest
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import ch.dreipol.dreiattest.multiplatform.DeviceAttestationService
 import ch.dreipol.dreiattest.multiplatform.DreiAttestService
 import ch.dreipol.dreiattest.multiplatform.GoogleAttestationProvider
 import ch.dreipol.dreiattest.multiplatform.SessionConfiguration
-import com.russhwolf.settings.MockSettings
+import com.russhwolf.settings.MapSettings
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -26,7 +25,7 @@ class DemoApiIT {
 
     @Test
     fun testDreiAttestation() {
-        val attestService = DreiAttestService(settings = MockSettings())
+        val attestService = DreiAttestService(settings = MapSettings())
         attestService.initWith(
             baseUrl, SessionConfiguration("test", deviceAttestationProvider = GoogleAttestationProvider(
             InstrumentationRegistry.getInstrumentation().context, safetyNetAPIKey)))

@@ -3,21 +3,22 @@ package ch.dreipol.dreiattest.multiplatform.api
 import ch.dreipol.dreiattest.multiplatform.DreiAttest
 import ch.dreipol.dreiattest.multiplatform.utils.Request
 import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
-import co.touchlab.kermit.CommonLogger
-import co.touchlab.kermit.Kermit
+import co.touchlab.kermit.Logger
 import io.ktor.client.*
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.*
-import io.ktor.client.features.logging.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger as KtorLogger
 import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.*
+import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 
 internal var middlewareClientCreator = {
     HttpClient {
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(
+        install(ContentNegotiation) {
+            json(
                 Json {
                     ignoreUnknownKeys = true
                 }
@@ -52,7 +53,7 @@ internal object NetworkHelper {
     internal fun isDreiattestHeader(header: String): Boolean = header.startsWith("Dreiattest-")
 }
 
-internal fun HttpStatusCode.isRedirect(): Boolean = 300 <= value && value < 400
+internal fun HttpStatusCode.isRedirect(): Boolean = value in 300..399
 
 internal fun HttpRequestBuilder.setUid(uid: String) {
     headers.append(NetworkHelper.HEADER_UID, uid)
@@ -107,7 +108,7 @@ internal fun Iterable<Pair<String, String>>.signableHeaders(): Collection<Pair<S
 internal fun Request.signableHeaders(): Collection<Pair<String, String>> =
     headers.signableHeaders()
 
-internal  fun HttpRequestBuilder.signableHeaders(): Collection<Pair<String, String>> =
+internal fun HttpRequestBuilder.signableHeaders(): Collection<Pair<String, String>> =
     readHeaders().signableHeaders()
 
 internal fun HttpRequestBuilder.readMethod(): String {
@@ -118,12 +119,8 @@ internal fun HttpRequestBuilder.readUrl(): String {
     return url.buildString()
 }
 
-internal class HttpLogger : Logger {
+internal class HttpLogger : KtorLogger {
     override fun log(message: String) {
-        kermit().d { message }
+        Logger.d { message }
     }
-}
-
-internal fun kermit(): Kermit {
-    return Kermit(CommonLogger())
 }
