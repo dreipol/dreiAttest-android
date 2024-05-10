@@ -10,58 +10,77 @@ group = "ch.dreipol.dreiattest.multiplatform"
 
 
 kotlin {
-    ios("ios") {
+    jvmToolchain(17)
+
+    androidTarget {
+        compilations.configureEach {
+            kotlinOptions {
+                jvmTarget = 17
+            }
+        }
+    }
+
+    iosX64() {
         binaries {
             framework()
         }
     }
 
-    iosSimulatorArm64("iosSimulatorArm64") {
+    iosArm64() {
         binaries {
             framework()
         }
     }
 
-    android("android") {
+    iosSimulatorArm64() {
+        binaries {
+            framework()
+        }
+    }
+
+    android() {
         publishAllLibraryVariants()
     }
 
-    sourceSets["commonMain"].dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions_coroutines")
-        implementation("io.ktor:ktor-client-core:$versions_ktor")
-        implementation("io.ktor:ktor-client-logging:$versions_ktor")
-        api("io.ktor:ktor-serialization-kotlinx-json:$versions_ktor")
-        implementation("io.ktor:ktor-client-content-negotiation:$versions_ktor")
-        implementation("co.touchlab:kermit:$versions_kermit")
-        api("com.russhwolf:multiplatform-settings:$versions_mpf_settings")
-        api("com.russhwolf:multiplatform-settings-no-arg:$versions_mpf_settings")
+    sourceSets {
+        commonMain.dependencies {
+            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions_coroutines")
+            implementation("io.ktor:ktor-client-core:$versions_ktor")
+            implementation("io.ktor:ktor-client-logging:$versions_ktor")
+            api("io.ktor:ktor-serialization-kotlinx-json:$versions_ktor")
+            implementation("io.ktor:ktor-client-content-negotiation:$versions_ktor")
+            implementation("co.touchlab:kermit:$versions_kermit")
+            api("com.russhwolf:multiplatform-settings:$versions_mpf_settings")
+            api("com.russhwolf:multiplatform-settings-no-arg:$versions_mpf_settings")
+        }
+
+        commonTest.dependencies {
+            implementation(kotlin("test"))
+            implementation "io.ktor:ktor-client-mock:$versions_ktor"
+            implementation("com.russhwolf:multiplatform-settings-test:$versions_mpf_settings")
+        }
+
+        androidMain.dependencies {
+            implementation "com.google.android.play:integrity:$versions_play_integrity"
+            implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$versions_play_services_coroutines"
+            implementation("io.ktor:ktor-client-android:$versions_ktor")
+        }
+
+        androidUnitTest.dependencies {
+            implementation("org.jetbrains.kotlin:kotlin-test-junit")
+        }
+
+        iosMain.dependencies {
+            implementation("io.ktor:ktor-client-darwin:$versions_ktor")
+        }
     }
 
-    sourceSets["commonTest"].dependencies {
-        implementation(kotlin("test"))
-        implementation "io.ktor:ktor-client-mock:$versions_ktor"
-        implementation("com.russhwolf:multiplatform-settings-test:$versions_mpf_settings")
-    }
-
-    sourceSets["androidMain"].dependencies {
-        implementation "com.google.android.play:integrity:$versions_play_integrity"
-        implementation "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$versions_play_services_coroutines"
-        implementation("io.ktor:ktor-client-android:$versions_ktor")
-    }
-
-    sourceSets["androidTest"].dependencies {
-        implementation("org.jetbrains.kotlin:kotlin-test-junit")
-    }
-
-    sourceSets["iosMain"].dependencies {
-        implementation("io.ktor:ktor-client-darwin:$versions_ktor")
-    }
-
-    sourceSets["iosSimulatorArm64Main"].dependsOn(sourceSets["iosMain"])
+    //    TODO: Remove as soon as Android Studio (Iguana) is fixed
+    task("testClasses")
 }
 
 android {
-    compileSdkVersion 31
+    compileSdk 34
     defaultConfig {
         minSdkVersion 23
         consumerProguardFiles "consumer-rules.pro"
@@ -81,6 +100,7 @@ android {
             minifyEnabled false
         }
     }
+    namespace 'ch.dreipol.dreiattest.multiplatform'
 }
 
 

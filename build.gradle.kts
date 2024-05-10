@@ -1,7 +1,7 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    id("com.github.ben-manes.versions") version "0.44.0"
+    id("com.github.ben-manes.versions") version "0.47.0"
 }
 buildscript {
     val versions_kotlin: String by project
@@ -12,7 +12,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:7.3.1")
+        classpath("com.android.tools.build:gradle:8.3.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$versions_kotlin")
         classpath("com.github.dcendents:android-maven-gradle-plugin:2.1")
         classpath("org.jlleitschuh.gradle:ktlint-gradle:$versions_linter")
