@@ -10,12 +10,12 @@ group = "ch.dreipol.dreiattest.multiplatform"
 
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 
     androidTarget {
         compilations.configureEach {
             kotlinOptions {
-                jvmTarget = 11
+                jvmTarget = 17
             }
         }
     }
