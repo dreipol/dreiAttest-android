@@ -32,7 +32,6 @@ public class AppleAttestationProvider() : AttestationProvider {
     public override suspend fun getAttestation(nonce: Hash, publicKey: String): Attestation {
         val completable = AttestationCompletable()
         val receiver = completable::receiveAttestation
-        receiver.freeze()
         service.attestKey(publicKey, nonce, receiver)
 
         val result = completable.await()
@@ -41,6 +40,6 @@ public class AppleAttestationProvider() : AttestationProvider {
         }
 
         val attestation = result.first ?: throw IllegalStateException()
-        return Attestation(keyId = publicKey, attestation = attestation.base64EncodedStringWithOptions(0), driver = platformDriver)
+        return Attestation(keyId = publicKey, attestation = attestation.base64EncodedStringWithOptions(0u), driver = platformDriver)
     }
 }
