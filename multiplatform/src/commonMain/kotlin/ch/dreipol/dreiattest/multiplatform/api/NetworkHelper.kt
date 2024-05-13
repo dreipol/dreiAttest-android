@@ -17,6 +17,7 @@ import kotlinx.serialization.json.Json
 
 internal var middlewareClientCreator = {
     HttpClient {
+        expectSuccess = true
         install(ContentNegotiation) {
             json(
                 Json {
