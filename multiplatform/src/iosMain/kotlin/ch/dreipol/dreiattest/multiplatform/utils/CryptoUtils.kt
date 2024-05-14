@@ -8,6 +8,7 @@ import platform.Foundation.*
 
 public actual typealias Hash = NSData
 
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
 @ExperimentalUnsignedTypes
 public actual operator fun Hash.plus(other: ByteArray): Hash {
     val mutableData = NSMutableData.create(this)
@@ -15,12 +16,14 @@ public actual operator fun Hash.plus(other: ByteArray): Hash {
     return mutableData
 }
 
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 @ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.hashSHA256(input: ByteArray): Hash {
     val data = Conversion.byteArrayToData(input)
     return rehashSHA256(data)
 }
 
+@OptIn(kotlinx.cinterop.ExperimentalForeignApi::class, kotlinx.cinterop.BetaInteropApi::class)
 @ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.rehashSHA256(input: Hash): Hash {
     val hash = NSMutableData.create(length = CC_SHA256_DIGEST_LENGTH.toULong())
@@ -32,15 +35,15 @@ internal actual fun CryptoUtils.rehashSHA256(input: Hash): Hash {
     return hash
 }
 
-internal actual fun CryptoUtils.generateUuid(): String = NSUUID.UUID().UUIDString.toLowerCase()
+internal actual fun CryptoUtils.generateUuid(): String = NSUUID.UUID().UUIDString.lowercase()
 
 @ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.encodeToBase64(input: ByteArray): String =
-    Conversion.byteArrayToData(input).base64EncodedStringWithOptions(0)
+    Conversion.byteArrayToData(input).base64EncodedStringWithOptions(0u)
 
 @ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.decodeBase64(input: String): ByteArray = Conversion.base64ToByteArray(input)
 
 @ExperimentalUnsignedTypes
 internal actual fun CryptoUtils.encodeHashedToBase64(input: Hash): String =
-    input.base64EncodedStringWithOptions(0)
+    input.base64EncodedStringWithOptions(0u)

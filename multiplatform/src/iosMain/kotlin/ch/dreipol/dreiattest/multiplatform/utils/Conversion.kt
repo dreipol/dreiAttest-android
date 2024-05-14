@@ -1,5 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
+import kotlinx.cinterop.BetaInteropApi
+import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.allocArrayOf
 import kotlinx.cinterop.memScoped
@@ -9,6 +11,7 @@ import platform.Foundation.create
 import platform.posix.memcpy
 
 internal object Conversion {
+    @OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
     @ExperimentalUnsignedTypes
     fun dataToByteArray(data: NSData): ByteArray {
         return ByteArray(data.length.toInt()).apply {
@@ -18,11 +21,13 @@ internal object Conversion {
         }
     }
 
+    @OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
     @ExperimentalUnsignedTypes
     fun byteArrayToData(bytes: ByteArray): NSData = memScoped {
         return NSData.create(bytes = allocArrayOf(bytes), length = bytes.size.toULong())
     }
 
+    @OptIn(BetaInteropApi::class)
     @ExperimentalUnsignedTypes
     fun base64ToByteArray(base64String: String): ByteArray {
         return dataToByteArray(NSData.create(base64Encoding = base64String) ?: throw IllegalArgumentException())

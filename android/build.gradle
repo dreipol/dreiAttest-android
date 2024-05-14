@@ -7,15 +7,11 @@ group = "ch.dreipol.attest.android"
 version = "1.0"
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.3"
-
+    compileSdk 34
 
     defaultConfig {
         minSdkVersion 21
-        targetSdkVersion 31
-        versionCode 1
-        versionName "0.0"
+        targetSdkVersion 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -31,12 +27,17 @@ android {
     kotlinOptions {
         freeCompilerArgs += '-Xexplicit-api=strict'
     }
+    namespace 'ch.dreipol.attest.android'
 
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
 
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
-    implementation "androidx.core:core-ktx:1.7.0"
+    implementation "androidx.core:core-ktx:1.13.1"
 
     testImplementation "junit:junit:4.13.2"
 }

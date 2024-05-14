@@ -33,12 +33,12 @@ public actual class DeviceKeystore : Keystore {
 
     private fun keyFor(alias: String): String = "dreiAttest.Key.keyId(uid: \"${alias}\")"
 
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
     override suspend fun generateNewKeyPair(alias: String): ByteArray {
         assert(service.isSupported())
 
         val completable = KeyGenCompletable()
         val receiver = completable::receiveKey
-        receiver.freeze()
         service.generateKeyWithCompletionHandler(receiver)
 
         val result = completable.await()
@@ -60,6 +60,7 @@ public actual class DeviceKeystore : Keystore {
         return NSUserDefaults.standardUserDefaults.objectForKey(keyFor(alias)) != null
     }
 
+    @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
     override suspend fun sign(alias: String, content: Hash): String {
         assert(service.isSupported())
 
@@ -68,7 +69,6 @@ public actual class DeviceKeystore : Keystore {
 
         val completable = SignatureCompletable()
         val receiver = completable::receiveSignature
-        receiver.freeze()
         service.generateAssertion(keyId, content, receiver)
 
         val result = completable.await()
@@ -77,7 +77,7 @@ public actual class DeviceKeystore : Keystore {
         }
 
         val assertion = result.first ?: throw IllegalStateException()
-        return assertion.base64EncodedStringWithOptions(0)
+        return assertion.base64EncodedStringWithOptions(0u)
     }
 
     override fun getPublicKey(alias: String): ByteArray {
