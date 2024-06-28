@@ -1,5 +1,9 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
+import kotlinx.coroutines.sync.Mutex
+
+internal data object InvalidKeyException: Exception("The provided dreiAttest key was invalid.")
+
 public interface Keystore {
 
     public suspend fun generateNewKeyPair(alias: String): ByteArray
