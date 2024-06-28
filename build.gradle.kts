@@ -15,7 +15,6 @@ buildscript {
         classpath("com.android.tools.build:gradle:8.3.2")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$versions_kotlin")
         classpath("com.github.dcendents:android-maven-gradle-plugin:2.1")
-        classpath("org.jlleitschuh.gradle:ktlint-gradle:$versions_linter")
     }
 }
 

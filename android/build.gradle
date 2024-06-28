@@ -1,7 +1,6 @@
 apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 apply plugin: "kotlin-kapt"
-apply plugin: "org.jlleitschuh.gradle.ktlint"
 
 group = "ch.dreipol.attest.android"
 version = "1.0"
@@ -41,9 +40,3 @@ dependencies {
 
     testImplementation "junit:junit:4.13.2"
 }
-
-ktlint {
-    ignoreFailures.set(false)
-}
-
-tasks["build"].dependsOn("ktlintFormat")
