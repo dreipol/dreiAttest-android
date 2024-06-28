@@ -117,7 +117,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
             urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0))
         )
         val nonce = CryptoUtils.rehashSHA256(requestHash + snonce.toByteArray(Charsets.UTF_8))
-        return keystore.sign(uid, nonce)
+        return keystore.sign(uid, nonce, mutex)
     }
 
     private fun generateUid(user: String): String {

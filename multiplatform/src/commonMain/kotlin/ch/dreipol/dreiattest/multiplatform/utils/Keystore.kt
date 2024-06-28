@@ -8,7 +8,7 @@ public interface Keystore {
 
     public fun hasKeyPair(alias: String): Boolean
 
-    public suspend fun sign(alias: String, content: Hash): String
+    public suspend fun sign(alias: String, content: Hash, mutex: Mutex): String
 
     public fun getPublicKey(alias: String): ByteArray
 }

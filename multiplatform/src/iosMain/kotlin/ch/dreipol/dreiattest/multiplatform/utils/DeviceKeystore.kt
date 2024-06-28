@@ -1,6 +1,8 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import platform.DeviceCheck.DCAppAttestService
 import platform.Foundation.NSData
 import platform.Foundation.NSError
@@ -61,7 +63,7 @@ public actual class DeviceKeystore : Keystore {
     }
 
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
-    override suspend fun sign(alias: String, content: Hash): String {
+    override suspend fun sign(alias: String, content: Hash, mutex: Mutex): String = mutex.withLock {
         assert(service.isSupported())
 
         val keyId = NSUserDefaults.standardUserDefaults.stringForKey(keyFor(alias))
