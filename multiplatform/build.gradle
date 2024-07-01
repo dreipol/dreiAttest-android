@@ -4,7 +4,6 @@ plugins {
     id("maven-publish")
     id 'org.jetbrains.kotlin.plugin.serialization' version "$versions_kotlin"
 }
-apply plugin: "org.jlleitschuh.gradle.ktlint"
 
 group = "ch.dreipol.dreiattest.multiplatform"
 
@@ -108,12 +107,6 @@ android {
 configurations {
     compileClasspath
 }
-
-ktlint {
-    ignoreFailures.set(false)
-}
-
-tasks["build"].dependsOn("ktlintFormat")
 
 Properties properties = new Properties()
 File localPropertiesFile = new File(rootProject.projectDir.absolutePath + '/local.properties')

@@ -16,7 +16,7 @@ public interface AttestService {
     public val uid: String
     public val systemInfo: SystemInfo
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
-    public suspend fun buildSignature(request: Request, snonce: String): String
+    public suspend fun buildSignature(request: Request, snonce: String, maxRetries: Int = 1): String
     public suspend fun deregister()
     public fun shouldHandle(url: String): Boolean
     public suspend fun getRequestNonce(): String
@@ -66,10 +66,13 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
     override suspend fun buildSignature(
         request: Request,
         snonce: String,
+        maxRetries: Int,
     ): String {
         if (keystore.hasKeyPair(uid).not()) {
             mutex.withLock {
-                if (keystore.hasKeyPair(uid)) { return@withLock }
+                if (keystore.hasKeyPair(uid)) {
+                    return@withLock
+                }
 
                 val signatureNonce = middlewareAPI.getNonce(uid).trim('"')
                 val publicKey = CryptoUtils.encodeToBase64(keystore.generateNewKeyPair(uid))
@@ -79,11 +82,22 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
                     middlewareAPI.setKey(attestation, uid, signatureNonce)
                 } catch (t: Throwable) {
                     keystore.deleteKeyPair(uid)
-                    throw t
+                    throw t // do not retry here
                 }
             }
         }
-        return signRequest(request, snonce)
+        try {
+            return signRequest(request, snonce)
+        } catch (_: InvalidKeyException) {
+            if (maxRetries > 0) {
+                mutex.withLock {
+                    keystore.deleteKeyPair(uid)
+                }
+                return buildSignature(request, snonce, maxRetries - 1)
+            } else {
+                throw InvalidKeyException
+            }
+        }
     }
 
     override suspend fun deregister() {
@@ -117,7 +131,7 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
             urlWithoutProtocol.toByteArray() + request.requestMethod.toByteArray() + headerJson + (request.body ?: ByteArray(0))
         )
         val nonce = CryptoUtils.rehashSHA256(requestHash + snonce.toByteArray(Charsets.UTF_8))
-        return keystore.sign(uid, nonce)
+        return keystore.sign(uid, nonce, mutex)
     }
 
     private fun generateUid(user: String): String {

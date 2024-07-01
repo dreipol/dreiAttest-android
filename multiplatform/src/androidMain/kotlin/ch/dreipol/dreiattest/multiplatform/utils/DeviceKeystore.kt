@@ -2,6 +2,7 @@ package ch.dreipol.dreiattest.multiplatform.utils
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import kotlinx.coroutines.sync.Mutex
 import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
@@ -37,10 +38,10 @@ public actual class DeviceKeystore : Keystore {
         return keyStore.containsAlias(alias)
     }
 
-    override suspend fun sign(alias: String, content: Hash): String {
+    override suspend fun sign(alias: String, content: Hash, mutex: Mutex): String {
         val entry = keyStore.getEntry(alias, null)
-        if (entry !is KeyStore.PrivateKeyEntry) {
-            throw IllegalArgumentException()
+        if (entry == null || entry !is KeyStore.PrivateKeyEntry) {
+            throw InvalidKeyException
         }
         return CryptoUtils.encodeToBase64(
             Signature.getInstance("SHA256withECDSA").run {

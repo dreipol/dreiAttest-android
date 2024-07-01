@@ -17,7 +17,7 @@ class AttestServiceMock(override val uid: String = "test") : AttestService {
         this.sessionConfiguration = sessionConfiguration
     }
 
-    override suspend fun buildSignature(request: Request, snonce: String): String {
+    override suspend fun buildSignature(request: Request, snonce: String, maxRetries: Int): String {
         return "signature"
     }
 

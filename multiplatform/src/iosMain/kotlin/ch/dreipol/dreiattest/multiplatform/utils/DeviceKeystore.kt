@@ -1,7 +1,12 @@
 package ch.dreipol.dreiattest.multiplatform.utils
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import platform.DeviceCheck.DCAppAttestService
+import platform.DeviceCheck.DCAppAttestServiceMeta
+import platform.DeviceCheck.DCError
+import platform.DeviceCheck.DCErrorDomain
 import platform.Foundation.NSData
 import platform.Foundation.NSError
 import platform.Foundation.NSUserDefaults
@@ -61,7 +66,7 @@ public actual class DeviceKeystore : Keystore {
     }
 
     @OptIn(kotlin.experimental.ExperimentalNativeApi::class)
-    override suspend fun sign(alias: String, content: Hash): String {
+    override suspend fun sign(alias: String, content: Hash, mutex: Mutex): String = mutex.withLock {
         assert(service.isSupported())
 
         val keyId = NSUserDefaults.standardUserDefaults.stringForKey(keyFor(alias))
@@ -73,7 +78,11 @@ public actual class DeviceKeystore : Keystore {
 
         val result = completable.await()
         result.second?.let {
-            throw Exception(it.description())
+            if (it.domain == DCErrorDomain && it.code == DCError.DCErrorInvalidKey.value) {
+                throw InvalidKeyException
+            } else {
+                throw Exception(it.description())
+            }
         }
 
         val assertion = result.first ?: throw IllegalStateException()

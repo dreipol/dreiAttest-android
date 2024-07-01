@@ -5,6 +5,7 @@ import ch.dreipol.dreiattest.multiplatform.utils.Hash
 import ch.dreipol.dreiattest.multiplatform.utils.Keystore
 import ch.dreipol.dreiattest.multiplatform.utils.encodeHashedToBase64
 import io.ktor.utils.io.core.*
+import kotlinx.coroutines.sync.Mutex
 import kotlin.native.concurrent.ThreadLocal
 
 @ThreadLocal
@@ -26,7 +27,7 @@ object KeystoreMock : Keystore {
         return keys.containsKey(alias)
     }
 
-    override suspend fun sign(alias: String, content: Hash): String {
+    override suspend fun sign(alias: String, content: Hash, mutex: Mutex): String {
         return CryptoUtils.encodeHashedToBase64(content)
     }
 
