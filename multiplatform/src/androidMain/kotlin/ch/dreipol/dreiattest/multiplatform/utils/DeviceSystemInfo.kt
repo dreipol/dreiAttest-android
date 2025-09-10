@@ -6,7 +6,7 @@ internal class DeviceSystemInfo(context: Context) : SystemInfo {
     private val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
 
     override val appVersion: String
-        get() = packageInfo.versionName
+        get() = packageInfo.versionName!!
 
     override val appBuild: String
         get() = packageInfo.versionCode.toString()

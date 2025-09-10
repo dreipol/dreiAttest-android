@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
 
                 val attestService = DreiAttestService()
                 attestService.initWith(
-                    baseUrl, SessionConfiguration("test", deviceAttestationProvider = GoogleAttestationProvider(this@MainActivity, safetyNetAPIKey)
+                    baseUrl, SessionConfiguration("test", deviceAttestationProvider = GoogleAttestationProvider(this@MainActivity, 12)
                     )
                 )
 
