@@ -23,7 +23,7 @@ public interface AttestService {
     public fun getBypassSecret(): String?
 }
 
-public class DreiAttestService(private val keystore: Keystore = DeviceKeystore(), settings: Settings = Settings()) : AttestService {
+public class DreiAttestService(private val keystore: Keystore = createDeviceKeystore(), settings: Settings = Settings()) : AttestService {
 
     internal companion object {
         internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){0,255}")

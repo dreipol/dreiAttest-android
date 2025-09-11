@@ -13,6 +13,8 @@ import platform.Foundation.NSUserDefaults
 import platform.Foundation.base64EncodedStringWithOptions
 import kotlin.native.concurrent.freeze
 
+actual fun createDeviceKeystore(): Keystore  = DeviceKeystore()
+
 private class KeyGenCompletable {
     private val completable = CompletableDeferred<Pair<String?, NSError?>>()
 
@@ -33,7 +35,7 @@ private class SignatureCompletable {
     suspend fun await() = completable.await()
 }
 
-public actual class DeviceKeystore : Keystore {
+public class DeviceKeystore: Keystore {
     private val service = DCAppAttestService.sharedService
 
     private fun keyFor(alias: String): String = "dreiAttest.Key.keyId(uid: \"${alias}\")"
