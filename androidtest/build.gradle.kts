@@ -1,9 +1,13 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
-    id("com.android.application")
-    id("kotlin-android")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
 }
 
 android {
+    namespace = "ch.dreipol.dreiattest.androidtest"
+
     compileSdk = libs.versions.android.compileSdk.get().toInt()
 
     defaultConfig {
@@ -19,13 +23,8 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles("proguard-rules.pro")
-            proguardFiles.add(getDefaultProguardFile("proguard-android-optimize.txt"))
+            proguardFiles("proguard-rules.pro", getDefaultProguardFile("proguard-android-optimize.txt"))
         }
-    }
-
-    kotlinOptions {
-        jvmTarget = "21"
     }
 
     compileOptions {
@@ -33,11 +32,15 @@ android {
         targetCompatibility = JavaVersion.VERSION_21
     }
 
-    namespace = "ch.dreipol.dreiattest.androidtest"
+    kotlin {
+        compilerOptions {
+            freeCompilerArgs.add("-Xexplicit-api=strict")
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+    }
 }
 
 dependencies {
-
     implementation(libs.kotlin.stdlib)
 
     implementation(project(":multiplatform"))

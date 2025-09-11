@@ -1,6 +1,7 @@
 [versions]
 android-minSdk = "23"
 android-compileSdk = "35"
+jvm-version = "21"
 androidMavenGradlePlugin = "2.1"
 appcompat = "1.7.1"
 coreKtx = "1.16.0"
@@ -53,3 +54,5 @@ kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref 
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 versions = { id = "com.github.ben-manes.versions", version.ref = "benmanesVersionsPlugin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

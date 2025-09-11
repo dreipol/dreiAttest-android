@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
 plugins {
@@ -15,9 +16,12 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    jvmToolchain(21)
+    jvmToolchain(libs.versions.jvm.version.get().toInt())
 
     androidTarget {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.fromTarget(libs.versions.jvm.version.get()))
+        }
         publishLibraryVariants("release")
     }
 
@@ -71,6 +75,8 @@ kotlin {
 }
 
 android {
+    namespace = "ch.dreipol.dreiattest.multiplatform"
+
     compileSdk = 35
     defaultConfig {
         minSdk = 23
@@ -88,7 +94,6 @@ android {
             isMinifyEnabled = false
         }
     }
-    namespace = "ch.dreipol.dreiattest.multiplatform"
 }
 
 

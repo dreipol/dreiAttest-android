@@ -1,13 +1,15 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
-    id("kotlin-android")
-    id("kotlin-kapt")
+    alias(libs.plugins.kotlin.android)
 }
 
 group = "ch.dreipol.attest.android"
 version = "1.0"
 
 android {
+    namespace = "ch.dreipol.attest.android"
     compileSdk = 35
     defaultConfig {
         minSdk = 21
@@ -19,21 +21,21 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = true
-//            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            proguardFiles("proguard-rules.pro", getDefaultProguardFile("proguard-android-optimize.txt"))
         }
     }
 
-    kotlinOptions {
-        freeCompilerArgs += "-Xexplicit-api=strict"
+    kotlin {
+        compilerOptions {
+            freeCompilerArgs.add("-Xexplicit-api=strict")
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
-    namespace = "ch.dreipol.attest.android"
 
-    compileOptions {
-    }
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
+    implementation(libs.core.ktx)
 
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 }
