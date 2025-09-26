@@ -41,16 +41,6 @@ public class DreiAttestPlugin(private val attestService: AttestService) {
         }
 
         override fun install(plugin: DreiAttestPlugin, scope: HttpClient) {
-            scope.config {
-                install(HttpRequestRetry) {
-                    retryIf(maxRetries = 1) { _, response ->
-                        runBlocking {
-                            plugin.reregister(response)
-                        }
-                    }
-                }
-            }
-
             scope.sendPipeline.intercept(HttpSendPipeline.State) {
                 plugin.addHeaders(context)
             }
@@ -60,6 +50,15 @@ public class DreiAttestPlugin(private val attestService: AttestService) {
                     context.headers.names().filter(NetworkHelper::isDreiattestHeader).forEach(context.headers::remove)
                 }
             }
+
+            val retryPlugin = HttpRequestRetry.prepare {
+                retryIf(maxRetries = 1) { _, response ->
+                    runBlocking {
+                        plugin.reregister(response)
+                    }
+                }
+            }
+            HttpRequestRetry.install(retryPlugin, scope)
         }
     }
 
