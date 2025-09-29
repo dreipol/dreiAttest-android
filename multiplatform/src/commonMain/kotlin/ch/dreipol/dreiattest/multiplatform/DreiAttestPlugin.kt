@@ -28,7 +28,7 @@ import kotlinx.coroutines.runBlocking
 public class InvalidHeaderException : Exception("Requests should not already contain \"Dreiattest-\" headers!")
 
 private const val dreiattestErrorHeaderName = "Dreiattest-error"
-private const val invalidKeyErrorName =
+private const val invalidKeyErrorName = "dreiAttest_invalid_key"
 
 /**
  * install this plugin in your client to sign your requests
@@ -82,7 +82,7 @@ public class DreiAttestPlugin(private val attestService: AttestService) {
         get() = headers.get(dreiattestErrorHeaderName)
 
     private val HttpResponse.isInvalidDreiattestKey: Boolean
-        get() = dreiattestError == "dreiAttest_invalid_key"
+        get() = dreiattestError == invalidKeyErrorName
 
     public suspend fun addHeaders(request: HttpRequestBuilder) {
         if (!attestService.shouldHandle(request.readUrl())) {
