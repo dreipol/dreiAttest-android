@@ -1,20 +1,23 @@
 import com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask
 
 plugins {
-    id("com.github.ben-manes.versions") version "0.47.0"
+    alias(libs.plugins.versions)
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
 }
+
 buildscript {
-    val versions_kotlin: String by project
-    val versions_linter: String by project
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.3.2")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$versions_kotlin")
-        classpath("com.github.dcendents:android-maven-gradle-plugin:2.1")
+        classpath(libs.kotlin.gradle.plugin)
+        classpath(libs.agp)
+        classpath(libs.android.maven.gradle.plugin)
     }
 }
 

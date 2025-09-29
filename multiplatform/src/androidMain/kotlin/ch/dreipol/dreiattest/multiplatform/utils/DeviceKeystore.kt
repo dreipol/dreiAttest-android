@@ -7,7 +7,9 @@ import java.security.KeyPairGenerator
 import java.security.KeyStore
 import java.security.Signature
 
-public actual class DeviceKeystore : Keystore {
+actual fun createDeviceKeystore(): Keystore  = DeviceKeystore()
+
+public  class DeviceKeystore: Keystore {
 
     private val keyStore: KeyStore
         get() = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }

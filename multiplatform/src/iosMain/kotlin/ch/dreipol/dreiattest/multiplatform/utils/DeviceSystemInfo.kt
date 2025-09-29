@@ -7,6 +7,7 @@ import platform.Foundation.CFBridgingRelease
 import platform.Foundation.NSBundle
 import platform.UIKit.UIDevice
 
+
 internal object DeviceSystemInfo : SystemInfo {
     private const val VERSION_KEY = "CFBundleShortVersionString"
     @OptIn(ExperimentalForeignApi::class)
@@ -14,14 +15,14 @@ internal object DeviceSystemInfo : SystemInfo {
     @OptIn(ExperimentalForeignApi::class)
     private val BUNDLE_ID_KEY = CFBridgingRelease(kCFBundleIdentifierKey) as String
 
-    override val appVersion: String
-        get() = NSBundle.mainBundle.infoDictionary?.get(VERSION_KEY)?.toString() ?: "unknown"
+    override val appVersion: String?
+        get() = NSBundle.mainBundle.infoDictionary?.get(VERSION_KEY)?.toString()
 
     override val appBuild: String
-        get() = NSBundle.mainBundle.infoDictionary?.get(BUILD_KEY)?.toString() ?: "unknown"
+        get() = NSBundle.mainBundle.infoDictionary?.get(BUILD_KEY)?.toString() ?: NULL_FALLBACK
 
     override val appIdentifier: String
-        get() = NSBundle.mainBundle.infoDictionary?.get(BUNDLE_ID_KEY)?.toString() ?: "unknown"
+        get() = NSBundle.mainBundle.infoDictionary?.get(BUNDLE_ID_KEY)?.toString() ?: NULL_FALLBACK
 
     override val osVersion: String
         get() = UIDevice.currentDevice.systemName + " " + UIDevice.currentDevice.systemVersion

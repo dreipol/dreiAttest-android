@@ -17,4 +17,4 @@ public interface Keystore {
     public fun getPublicKey(alias: String): ByteArray
 }
 
-public expect class DeviceKeystore() : Keystore
+public expect fun createDeviceKeystore() : Keystore

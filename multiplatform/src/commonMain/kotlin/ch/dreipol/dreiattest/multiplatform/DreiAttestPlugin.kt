@@ -1,14 +1,34 @@
 package ch.dreipol.dreiattest.multiplatform
 
-import ch.dreipol.dreiattest.multiplatform.api.*
+import ch.dreipol.dreiattest.multiplatform.api.NetworkHelper
+import ch.dreipol.dreiattest.multiplatform.api.isRedirect
+import ch.dreipol.dreiattest.multiplatform.api.readBody
+import ch.dreipol.dreiattest.multiplatform.api.readHeaders
+import ch.dreipol.dreiattest.multiplatform.api.readMethod
+import ch.dreipol.dreiattest.multiplatform.api.readUrl
+import ch.dreipol.dreiattest.multiplatform.api.setCommonHeaders
+import ch.dreipol.dreiattest.multiplatform.api.setNonce
+import ch.dreipol.dreiattest.multiplatform.api.setSharedSecret
+import ch.dreipol.dreiattest.multiplatform.api.setSignature
+import ch.dreipol.dreiattest.multiplatform.api.setUid
+import ch.dreipol.dreiattest.multiplatform.api.setUserHeaders
 import ch.dreipol.dreiattest.multiplatform.utils.Request
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.util.*
+import io.ktor.client.HttpClient
+import io.ktor.client.call.HttpClientCall
+import io.ktor.client.plugins.HttpClientPlugin
+import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.request.HttpSendPipeline
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.request
+import io.ktor.http.HttpStatusCode
+import io.ktor.util.AttributeKey
+import kotlinx.coroutines.runBlocking
 
 public class InvalidHeaderException : Exception("Requests should not already contain \"Dreiattest-\" headers!")
+
+private const val dreiattestErrorHeaderName = "Dreiattest-error"
+private const val invalidKeyErrorName = "dreiAttest_invalid_key"
 
 /**
  * install this plugin in your client to sign your requests
@@ -28,16 +48,41 @@ public class DreiAttestPlugin(private val attestService: AttestService) {
                 plugin.addHeaders(context)
             }
             scope.sendPipeline.intercept(HttpSendPipeline.Receive) {
-                if ((subject as? HttpClientCall)?.response?.status?.isRedirect() == true) {
+                val response = (subject as? HttpClientCall)?.response
+                if (response?.status?.isRedirect() == true) {
                     context.headers.names().filter(NetworkHelper::isDreiattestHeader).forEach(context.headers::remove)
                 }
             }
+
+            val retryPlugin = HttpRequestRetry.prepare {
+                retryIf(maxRetries = 1) { _, response ->
+                    runBlocking {
+                        plugin.reregisterIfNecessary(response)
+                    }
+                }
+            }
+            HttpRequestRetry.install(retryPlugin, scope)
         }
     }
 
     public class Config {
         public lateinit var attestService: AttestService
     }
+
+    public suspend fun reregisterIfNecessary(response: HttpResponse): Boolean {
+        if (!attestService.shouldHandle(response.request.url.toString()) || !response.isInvalidDreiattestKey) {
+            return false
+        }
+
+        attestService.forgetKey()
+        return true
+    }
+
+    private val HttpResponse.dreiattestError: String?
+        get() = headers.get(dreiattestErrorHeaderName)
+
+    private val HttpResponse.isInvalidDreiattestKey: Boolean
+        get() = dreiattestError == invalidKeyErrorName
 
     public suspend fun addHeaders(request: HttpRequestBuilder) {
         if (!attestService.shouldHandle(request.readUrl())) {

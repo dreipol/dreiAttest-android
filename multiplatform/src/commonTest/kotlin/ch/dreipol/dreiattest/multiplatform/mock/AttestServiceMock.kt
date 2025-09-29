@@ -25,6 +25,10 @@ class AttestServiceMock(override val uid: String = "test") : AttestService {
         // nothing to do
     }
 
+    override suspend fun forgetKey() {
+        // nothing to do
+    }
+
     override fun shouldHandle(url: String): Boolean {
         return url.contains(baseAddress)
     }

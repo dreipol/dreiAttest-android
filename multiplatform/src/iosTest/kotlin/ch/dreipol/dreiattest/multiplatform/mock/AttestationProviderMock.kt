@@ -7,7 +7,7 @@ import ch.dreipol.dreiattest.multiplatform.utils.*
 import io.ktor.utils.io.core.*
 
 actual class AttestationProviderMock : AttestationProvider {
-    override val systemInfo = SystemInfoMock
+    override val systemInfo: SystemInfo = SystemInfoMock
     override val isSupported: Boolean
         get() = true
 

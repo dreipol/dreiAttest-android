@@ -18,12 +18,13 @@ public interface AttestService {
     public fun initWith(baseAddress: String, sessionConfiguration: SessionConfiguration)
     public suspend fun buildSignature(request: Request, snonce: String, maxRetries: Int = 1): String
     public suspend fun deregister()
+    public suspend fun forgetKey()
     public fun shouldHandle(url: String): Boolean
     public suspend fun getRequestNonce(): String
     public fun getBypassSecret(): String?
 }
 
-public class DreiAttestService(private val keystore: Keystore = DeviceKeystore(), settings: Settings = Settings()) : AttestService {
+public class DreiAttestService(private val keystore: Keystore = createDeviceKeystore(), settings: Settings = Settings()) : AttestService {
 
     internal companion object {
         internal val usernamePattern = Regex("([a-z]|[A-Z]|[0-9]|[.]|[_]|[-]|[@]){0,255}")
@@ -115,6 +116,12 @@ public class DreiAttestService(private val keystore: Keystore = DeviceKeystore()
             } finally {
                 keystore.deleteKeyPair(uid)
             }
+        }
+    }
+
+    override suspend fun forgetKey() {
+        mutex.withLock {
+            keystore.deleteKeyPair(uid)
         }
     }
 

@@ -1,6 +1,7 @@
 package ch.dreipol.dreiattest.multiplatform.api
 
 import ch.dreipol.dreiattest.multiplatform.DreiAttest
+import ch.dreipol.dreiattest.multiplatform.utils.NULL_FALLBACK
 import ch.dreipol.dreiattest.multiplatform.utils.Request
 import ch.dreipol.dreiattest.multiplatform.utils.SystemInfo
 import co.touchlab.kermit.Logger
@@ -80,7 +81,7 @@ internal fun HttpRequestBuilder.setUserHeaders() {
 
 internal fun HttpRequestBuilder.setCommonHeaders(systemInfo: SystemInfo) {
     headers.append(NetworkHelper.HEADER_LIBRARY_VERSION, DreiAttest.version)
-    headers.append(NetworkHelper.HEADER_APP_VERSION, systemInfo.appVersion)
+    headers.append(NetworkHelper.HEADER_APP_VERSION, systemInfo.appVersion ?: NULL_FALLBACK)
     headers.append(NetworkHelper.HEADER_APP_BUILD, systemInfo.appBuild)
     headers.append(NetworkHelper.HEADER_APP_IDENTIFIER, systemInfo.appIdentifier)
     headers.append(NetworkHelper.HEADER_OS, systemInfo.osVersion)
